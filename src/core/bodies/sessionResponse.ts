@@ -49,9 +49,7 @@ export class SessionResponse {
       throw new CouldNotParseKNXIP('SESSION_RESPONSE too short');
     }
     const sessionId = raw.readUInt16BE(offset);
-    const publicKey = Buffer.from(
-      raw.subarray(offset + 2, offset + 2 + X25519_PUBLIC_KEY_LEN),
-    );
+    const publicKey = Buffer.from(raw.subarray(offset + 2, offset + 2 + X25519_PUBLIC_KEY_LEN));
     const mac = Buffer.from(
       raw.subarray(
         offset + 2 + X25519_PUBLIC_KEY_LEN,

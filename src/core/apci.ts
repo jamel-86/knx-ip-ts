@@ -36,9 +36,7 @@ const APCI_SMALL_PAYLOAD_MASK = 0x3f;
  * as `small` produces a 2-byte APDU and as `bytes` produces a 3-byte APDU. Both are
  * legal but devices interpret them differently, so we make the caller choose.
  */
-export type APDUValue =
-  | { kind: 'small'; value: number }
-  | { kind: 'bytes'; value: Buffer };
+export type APDUValue = { kind: 'small'; value: number } | { kind: 'bytes'; value: Buffer };
 
 export type APCI =
   | { kind: 'GroupValueRead' }

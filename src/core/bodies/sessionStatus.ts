@@ -15,8 +15,7 @@ export const SecureSessionStatus = {
   CLOSE: 0x05,
 } as const;
 
-export type SecureSessionStatus =
-  (typeof SecureSessionStatus)[keyof typeof SecureSessionStatus];
+export type SecureSessionStatus = (typeof SecureSessionStatus)[keyof typeof SecureSessionStatus];
 
 const STATUS_NAMES = Object.fromEntries(
   Object.entries(SecureSessionStatus).map(([k, v]) => [v, k]),

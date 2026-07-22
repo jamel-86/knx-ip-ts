@@ -1,6 +1,6 @@
 // KNX/IP Secure key-derivation helpers.
 //
-// Author: Jamel Nacef <jamel.nacef@eelectron.com>
+// Author: Jamel Nacef <jamelnacef@icloud.com>
 // SPDX-License-Identifier: Apache-2.0
 //
 // The KDFs are documented in the KNX/IP Secure specification (KNX 03_08_05);

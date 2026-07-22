@@ -1,6 +1,6 @@
 // DPT 29.* — 8-byte signed integer (-2^63..2^63-1).
 //
-// Author: Jamel Nacef <jamel.nacef@eelectron.com>
+// Author: Jamel Nacef <jamelnacef@icloud.com>
 // SPDX-License-Identifier: Apache-2.0
 //
 // Used for high-precision energy measurements (active / apparent / reactive
@@ -43,7 +43,9 @@ function makeInt64(id: string, name: string, unit?: string): DPTCodec<bigint> {
         }
         bi = BigInt(value);
       } else {
-        throw new ConversionError(`DPT ${id}: value must be bigint | integer number, got ${typeof value}`);
+        throw new ConversionError(
+          `DPT ${id}: value must be bigint | integer number, got ${typeof value}`,
+        );
       }
       if (bi < MIN || bi > MAX) {
         throw new ConversionError(`DPT ${id}: value ${bi} out of int64 range`);

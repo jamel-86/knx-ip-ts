@@ -42,9 +42,7 @@ export class TunnellingRequest {
     }
     const structLen = raw[offset]!;
     if (structLen !== TunnellingRequest.STRUCT_LENGTH) {
-      throw new CouldNotParseKNXIP(
-        `Unexpected TUNNELLING_REQUEST struct length ${structLen}`,
-      );
+      throw new CouldNotParseKNXIP(`Unexpected TUNNELLING_REQUEST struct length ${structLen}`);
     }
     const channelId = raw[offset + 1]!;
     const seq = raw[offset + 2]!;

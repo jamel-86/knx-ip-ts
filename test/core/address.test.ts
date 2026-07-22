@@ -1,10 +1,6 @@
 import { strict as assert } from 'node:assert';
 import { describe, it } from 'node:test';
-import {
-  CouldNotParseAddress,
-  GroupAddress,
-  IndividualAddress,
-} from '../../src/core/address';
+import { CouldNotParseAddress, GroupAddress, IndividualAddress } from '../../src/core/address';
 
 describe('IndividualAddress', () => {
   it('parses 1.2.3 form', () => {

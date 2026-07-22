@@ -1,6 +1,6 @@
-# @jamel-86/knx-ip-ts
+# @jamel-knx/knx-ip-ts
 
-A pure-TypeScript KNX/IP client library for Node.js. No Node-RED required.
+A pure-TypeScript KNX/IP client library for Node.js.
 
 - KNX/IP **tunnelling over UDP** with heartbeat, send mutex, and auto-reconnect
 - **KNX IP Secure** tunnelling over TCP (X25519 handshake + AES-CCM wrapper)
@@ -9,12 +9,10 @@ A pure-TypeScript KNX/IP client library for Node.js. No Node-RED required.
 - **ETS `.knxproj`** parsing — including password-protected projects
 - Multiple concurrent tunnels, no module-level singletons
 
-Extracted from [`node-red-contrib-eelectron-knxip`](https://github.com/eelectronspa/node-red-contrib-eelectron-knxip).
-
 ## Install
 
 ```bash
-npm install @jamel-86/knx-ip-ts
+npm install @jamel-knx/knx-ip-ts
 ```
 
 Requires Node.js ≥ 18.
@@ -22,7 +20,7 @@ Requires Node.js ≥ 18.
 ## Quick start — tunnel a GroupValueWrite
 
 ```ts
-import { TunnelClient, smallValue } from '@jamel-86/knx-ip-ts';
+import { TunnelClient, smallValue } from '@jamel-knx/knx-ip-ts';
 
 const client = new TunnelClient({
   gatewayIp: '192.168.1.50',
@@ -53,7 +51,7 @@ For decoded telegrams + an in-memory ring buffer, wire a `BusMonitor` to the `ce
 ## Discover gateways on the LAN
 
 ```ts
-import { discoverGateways } from '@jamel-86/knx-ip-ts';
+import { discoverGateways } from '@jamel-knx/knx-ip-ts';
 
 const gateways = await discoverGateways({ timeoutMs: 3000 });
 for (const g of gateways) {
@@ -64,7 +62,7 @@ for (const g of gateways) {
 ## KNX IP Secure tunnel
 
 ```ts
-import { TunnelClient } from '@jamel-86/knx-ip-ts';
+import { TunnelClient } from '@jamel-knx/knx-ip-ts';
 
 const client = new TunnelClient({
   gatewayIp: '192.168.1.50',
@@ -83,10 +81,16 @@ await client.connect();
 
 The two-secret model (DeviceAuthCode = gateway identity; UserID/Password = client identity) follows the KNX IP Secure spec; UIs that show a single password are conflating the two for convenience.
 
+### Security properties
+
+- **Anti-replay:** inbound `SECURE_WRAPPER` frames are rejected unless their session sequence counter advances, so a captured frame can't be replayed onto the bus.
+- **Constant-time MAC verification:** the `SESSION_RESPONSE` and `SECURE_WRAPPER` authentication tags are compared with a length-guarded constant-time equality, not a short-circuiting byte compare.
+- Session frames are AES-128-CCM encrypted with a per-session key derived from an X25519 ECDH exchange; the handshake MACs are computed per KNX 03_08_05.
+
 ## Encode / decode DPT values
 
 ```ts
-import { getDpt, hasDpt } from '@jamel-86/knx-ip-ts';
+import { getDpt, hasDpt } from '@jamel-knx/knx-ip-ts';
 
 if (hasDpt('9.001')) {
   const codec = getDpt('9.001');         // 2-byte float (temperature)
@@ -99,7 +103,7 @@ if (hasDpt('9.001')) {
 
 ```ts
 import { readFileSync } from 'node:fs';
-import { ETSProjectMap } from '@jamel-86/knx-ip-ts';
+import { ETSProjectMap } from '@jamel-knx/knx-ip-ts';
 
 const buf = readFileSync('./MyProject.knxproj');
 const map = new ETSProjectMap();
@@ -133,6 +137,10 @@ npm run build      # tsc → dist/
 npm test           # node --test --import tsx
 npm run lint
 ```
+
+## Changelog
+
+See [`CHANGELOG.md`](CHANGELOG.md).
 
 ## License
 

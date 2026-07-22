@@ -25,9 +25,7 @@ const codec: DPTCodec<DPT11Value> = {
     const yearShort = apdu.value[2]! & 0x7f;
     const year = yearShort >= 90 ? 1900 + yearShort : 2000 + yearShort;
     if (day < 1 || day > 31 || month < 1 || month > 12) {
-      throw new ConversionError(
-        `DPT 11.001: invalid date ${year}-${month}-${day}`,
-      );
+      throw new ConversionError(`DPT 11.001: invalid date ${year}-${month}-${day}`);
     }
     return { year, month, day };
   },
@@ -41,10 +39,7 @@ const codec: DPTCodec<DPT11Value> = {
     let yearShort: number;
     if (v.year >= 2000 && v.year < 2090) yearShort = v.year - 2000;
     else if (v.year >= 1990 && v.year < 2000) yearShort = v.year - 1900;
-    else
-      throw new ConversionError(
-        `DPT 11.001: year must be 1990..2089, got ${v.year}`,
-      );
+    else throw new ConversionError(`DPT 11.001: year must be 1990..2089, got ${v.year}`);
     return { kind: 'bytes', value: Buffer.from([v.day, v.month, yearShort]) };
   },
 };

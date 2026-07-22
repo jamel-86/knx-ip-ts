@@ -47,9 +47,7 @@ export interface DiscoveryOptions {
   localAddress?: string;
 }
 
-export async function discoverGateways(
-  opts: DiscoveryOptions = {},
-): Promise<DiscoveredGateway[]> {
+export async function discoverGateways(opts: DiscoveryOptions = {}): Promise<DiscoveredGateway[]> {
   const timeoutMs = opts.timeoutMs ?? 3000;
   const mcastGroup = opts.multicastGroup ?? KNX_MULTICAST_GROUP;
   const mcastPort = opts.multicastPort ?? KNX_PORT;
@@ -59,10 +57,7 @@ export async function discoverGateways(
 
   return new Promise<DiscoveredGateway[]>((resolve, reject) => {
     let settled = false;
-    const settle = (
-      action: 'resolve' | 'reject',
-      value?: DiscoveredGateway[] | Error,
-    ) => {
+    const settle = (action: 'resolve' | 'reject', value?: DiscoveredGateway[] | Error) => {
       if (settled) return;
       settled = true;
       try {
@@ -88,9 +83,7 @@ export async function discoverGateways(
           address: ep.ip,
           port: ep.port,
           friendlyName: di?.friendlyName ?? '',
-          ...(di?.individualAddress
-            ? { individualAddress: di.individualAddress.toString() }
-            : {}),
+          ...(di?.individualAddress ? { individualAddress: di.individualAddress.toString() } : {}),
           ...(di?.serial ? { serial: di.serial } : {}),
           ...(di?.macAddress ? { macAddress: di.macAddress } : {}),
           ...(di?.multicastAddress ? { multicastAddress: di.multicastAddress } : {}),

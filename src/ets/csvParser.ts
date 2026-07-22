@@ -213,9 +213,7 @@ export function parseEtsCsv(input: string): ParseResult {
   const firstNonEmpty = lines.find((l) => l.trim() !== '') ?? '';
   const delimiter = detectDelimiter(firstNonEmpty);
 
-  const rawRows = lines
-    .filter((l) => l.trim() !== '')
-    .map((l) => parseCsvLine(l, delimiter));
+  const rawRows = lines.filter((l) => l.trim() !== '').map((l) => parseCsvLine(l, delimiter));
 
   if (rawRows.length === 0) return { rows: [], warnings: ['CSV had no parseable rows'] };
 

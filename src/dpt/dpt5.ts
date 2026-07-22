@@ -21,9 +21,7 @@ function readByte(apdu: APDUValue, dptId: string): number {
     throw new ConversionError(`DPT ${dptId}: expected 1-byte APDU, got small payload`);
   }
   if (apdu.value.length !== 1) {
-    throw new ConversionError(
-      `DPT ${dptId}: expected 1-byte APDU, got ${apdu.value.length} bytes`,
-    );
+    throw new ConversionError(`DPT ${dptId}: expected 1-byte APDU, got ${apdu.value.length} bytes`);
   }
   return apdu.value[0]!;
 }
@@ -44,9 +42,7 @@ function makeScaledCodec(spec: ScaledSpec): DPTCodec<number> {
       }
       const raw = round((value / spec.max) * 255);
       if (raw < 0 || raw > 255) {
-        throw new ConversionError(
-          `DPT ${spec.id}: value ${value} out of range (0..${spec.max})`,
-        );
+        throw new ConversionError(`DPT ${spec.id}: value ${value} out of range (0..${spec.max})`);
       }
       return { kind: 'bytes', value: Buffer.from([raw]) };
     },

@@ -1,6 +1,6 @@
 // KNX/IP Secure session driver.
 //
-// Author: Jamel Nacef <jamel.nacef@eelectron.com>
+// Author: Jamel Nacef <jamelnacef@icloud.com>
 // SPDX-License-Identifier: Apache-2.0
 //
 // Sits between an inner transport (UDP for routing, TCP for tunneling) and
@@ -18,25 +18,18 @@
 
 import { EventEmitter } from 'node:events';
 import {
+  type SecureSessionStatus,
   SecureWrapper,
   SessionAuthenticate,
   SessionRequest,
   SessionResponse,
   SessionStatus,
-  type SecureSessionStatus,
   secureSessionStatusName,
 } from '../core/bodies';
 import { KNXIPFrame } from '../core/knxipFrame';
-import {
-  generateX25519KeyPair,
-  x25519SharedSecret,
-} from '../secure/crypto';
+import { constantTimeEquals, generateX25519KeyPair, x25519SharedSecret } from '../secure/crypto';
 import { computeAuthenticateMac, computeSessionResponseMac } from '../secure/handshake';
-import {
-  deriveDeviceAuthCode,
-  deriveSessionKey,
-  deriveUserPasswordKey,
-} from '../secure/keys';
+import { deriveDeviceAuthCode, deriveSessionKey, deriveUserPasswordKey } from '../secure/keys';
 import { decryptSecureWrapper, encryptSecureWrapper } from '../secure/wrapper';
 import type { SocketAddress } from './udpTransport';
 
@@ -110,7 +103,10 @@ interface PendingPromise<T> {
 export class SecureSession extends EventEmitter {
   private readonly inner: InnerTransport;
   private readonly opts: Required<
-    Pick<SecureSessionOptions, 'userId' | 'serialNumber' | 'messageTag' | 'handshakeTimeoutMs' | 'keepaliveMs'>
+    Pick<
+      SecureSessionOptions,
+      'userId' | 'serialNumber' | 'messageTag' | 'handshakeTimeoutMs' | 'keepaliveMs'
+    >
   > & { logger: NonNullable<SecureSessionOptions['logger']> };
 
   private readonly clientPriv: Buffer;
@@ -124,6 +120,8 @@ export class SecureSession extends EventEmitter {
   private _serverPub: Buffer | null = null;
   private _sessionKey: Buffer | null = null;
   private _sequenceId = 0;
+  /** Highest inbound SECURE_WRAPPER sequenceId accepted from the peer (anti-replay). */
+  private _lastPeerSeq: number | undefined;
   private _keepaliveTimer: NodeJS.Timeout | null = null;
   private _pendingHandshake: PendingPromise<void> | null = null;
 
@@ -196,9 +194,7 @@ export class SecureSession extends EventEmitter {
 
       this._setState('requesting');
       const req = new SessionRequest({ publicKey: Buffer.from(this.clientPub) });
-      this.inner
-        .send(KNXIPFrame.fromBody(req))
-        .catch((err) => this._failHandshake(err as Error));
+      this.inner.send(KNXIPFrame.fromBody(req)).catch((err) => this._failHandshake(err as Error));
     });
   }
 
@@ -211,9 +207,7 @@ export class SecureSession extends EventEmitter {
     const seq = this._sequenceId;
     this._sequenceId += 1;
     if (this._sequenceId > 0xffff_ffff_ffff) {
-      throw new Error(
-        'SecureSession sequence counter exhausted — restart the session',
-      );
+      throw new Error('SecureSession sequence counter exhausted — restart the session');
     }
     const plainBuf = frame.toKnx();
     const { encryptedFrame, mac } = encryptSecureWrapper({
@@ -291,6 +285,7 @@ export class SecureSession extends EventEmitter {
       this._pendingHandshake = null;
     }
     this._setState('authenticated');
+    this._lastPeerSeq = undefined; // fresh inbound anti-replay window for the new session
     if (this.opts.keepaliveMs > 0) {
       this._keepaliveTimer = setInterval(() => {
         this._sendStatus(0x04).catch((err) =>
@@ -373,8 +368,10 @@ export class SecureSession extends EventEmitter {
         clientPublicKey: this.clientPub,
         serverPublicKey: this._serverPub,
       });
-      if (!expectedMac.equals(body.mac)) {
-        this._failHandshake(new Error('SESSION_RESPONSE MAC verification failed (wrong device auth password?)'));
+      if (!constantTimeEquals(expectedMac, body.mac)) {
+        this._failHandshake(
+          new Error('SESSION_RESPONSE MAC verification failed (wrong device auth password?)'),
+        );
         return;
       }
     } else {
@@ -421,9 +418,7 @@ export class SecureSession extends EventEmitter {
       encryptedFrame,
       mac: wrapperMac,
     });
-    this.inner
-      .send(KNXIPFrame.fromBody(wrapped))
-      .catch((err) => this._failHandshake(err as Error));
+    this.inner.send(KNXIPFrame.fromBody(wrapped)).catch((err) => this._failHandshake(err as Error));
   }
 
   /** Plain (unwrapped) SESSION_STATUS only ever appears during the handshake. */
@@ -436,7 +431,9 @@ export class SecureSession extends EventEmitter {
       this._completeHandshake();
     } else {
       this._failHandshake(
-        new Error(`SESSION_STATUS ${secureSessionStatusName(body.status)} — authentication rejected`),
+        new Error(
+          `SESSION_STATUS ${secureSessionStatusName(body.status)} — authentication rejected`,
+        ),
       );
     }
   }
@@ -469,6 +466,19 @@ export class SecureSession extends EventEmitter {
       );
       return;
     }
+
+    // Anti-replay (KNX/IP Secure 03_08_09): drop any frame whose sequenceId is
+    // not greater than the last one we accepted. Done AFTER MAC verification so
+    // an attacker can't push the window forward with unauthenticated frames.
+    // Strict-monotonic is correct for secure tunnelling (ordered TCP); a sliding
+    // window would be needed for reorder-tolerant UDP routing.
+    if (this._lastPeerSeq !== undefined && body.sequenceId <= this._lastPeerSeq) {
+      this.opts.logger.warn?.(
+        `SECURE_WRAPPER anti-replay drop: seq=${body.sequenceId} <= last=${this._lastPeerSeq}`,
+      );
+      return;
+    }
+    this._lastPeerSeq = body.sequenceId;
 
     let inner: KNXIPFrame;
     try {

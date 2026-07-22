@@ -1,7 +1,7 @@
 // SECURE_WRAPPER (0x0950) — outer envelope for every authenticated KNX/IP
 // frame in a Secure Tunneling / Secure Routing session.
 //
-// Author: Jamel Nacef <jamel.nacef@eelectron.com>
+// Author: Jamel Nacef <jamelnacef@icloud.com>
 // SPDX-License-Identifier: Apache-2.0
 //
 // Wire layout (all big-endian):
@@ -90,7 +90,10 @@ export class SecureWrapper {
     const messageTag = raw.readUInt16BE(offset + 14);
     const innerLen = available - SECURE_WRAPPER_OVERHEAD;
     const encryptedFrame = Buffer.from(
-      raw.subarray(offset + SECURE_WRAPPER_HEADER_LEN, offset + SECURE_WRAPPER_HEADER_LEN + innerLen),
+      raw.subarray(
+        offset + SECURE_WRAPPER_HEADER_LEN,
+        offset + SECURE_WRAPPER_HEADER_LEN + innerLen,
+      ),
     );
     const mac = Buffer.from(
       raw.subarray(

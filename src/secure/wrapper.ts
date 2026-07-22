@@ -1,6 +1,6 @@
 // SECURE_WRAPPER frame encryption / decryption per KNX/IP Secure §4.5.
 //
-// Author: Jamel Nacef <jamel.nacef@eelectron.com>
+// Author: Jamel Nacef <jamelnacef@icloud.com>
 // SPDX-License-Identifier: Apache-2.0
 //
 // Each session frame is a SecureWrapper body whose plaintext is a complete
@@ -16,7 +16,7 @@
 // information, serial number, message tag, and a suffix that varies per
 // purpose (payload length for block_0, `\xff\x00` for counter_0).
 
-import { aesCbcMac, aesCtrXor } from './crypto';
+import { aesCbcMac, aesCtrXor, constantTimeEquals } from './crypto';
 
 const WRAPPER_HEADER_PREFIX = Buffer.from([0x06, 0x10, 0x09, 0x50]);
 const WRAPPER_FIXED_OVERHEAD = 38; // 6 header + 2 session + 6 seq + 6 serial + 2 tag + 16 mac
@@ -109,11 +109,7 @@ export function encryptSecureWrapper(opts: EncryptWrapperInput): EncryptWrapperO
   // The wire MAC is encrypted with the keystream block at counter_0; the
   // payload picks up at counter_0 + 1, ..., handled by passing one CTR cipher
   // both blocks of input.
-  const stream = aesCtrXor(
-    opts.sessionKey,
-    counter0,
-    Buffer.concat([macCbc, opts.plainFrame]),
-  );
+  const stream = aesCtrXor(opts.sessionKey, counter0, Buffer.concat([macCbc, opts.plainFrame]));
   return {
     mac: stream.subarray(0, 16),
     encryptedFrame: stream.subarray(16),
@@ -159,7 +155,7 @@ export function decryptSecureWrapper(opts: DecryptWrapperInput): Buffer {
     block0,
   });
 
-  if (!recoveredMac.equals(expectedMac)) {
+  if (!constantTimeEquals(recoveredMac, expectedMac)) {
     throw new Error('SECURE_WRAPPER MAC verification failed');
   }
   return plainFrame;

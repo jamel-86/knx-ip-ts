@@ -64,13 +64,22 @@ export class IndividualAddress {
       const main = Number.parseInt(m[2]!, 10);
       const line = Number.parseInt(m[3]!, 10);
       if (area > IndividualAddress.MAX_AREA) {
-        throw new CouldNotParseAddress(address, `Area out of range (0..${IndividualAddress.MAX_AREA})`);
+        throw new CouldNotParseAddress(
+          address,
+          `Area out of range (0..${IndividualAddress.MAX_AREA})`,
+        );
       }
       if (main > IndividualAddress.MAX_MAIN) {
-        throw new CouldNotParseAddress(address, `Main out of range (0..${IndividualAddress.MAX_MAIN})`);
+        throw new CouldNotParseAddress(
+          address,
+          `Main out of range (0..${IndividualAddress.MAX_MAIN})`,
+        );
       }
       if (line > IndividualAddress.MAX_LINE) {
-        throw new CouldNotParseAddress(address, `Line out of range (0..${IndividualAddress.MAX_LINE})`);
+        throw new CouldNotParseAddress(
+          address,
+          `Line out of range (0..${IndividualAddress.MAX_LINE})`,
+        );
       }
       return (area << 12) | (main << 8) | line;
     }
@@ -158,15 +167,24 @@ export class GroupAddress {
       }
       if (middle !== null) {
         if (middle > GroupAddress.MAX_MIDDLE) {
-          throw new CouldNotParseAddress(address, `Middle out of range (0..${GroupAddress.MAX_MIDDLE})`);
+          throw new CouldNotParseAddress(
+            address,
+            `Middle out of range (0..${GroupAddress.MAX_MIDDLE})`,
+          );
         }
         if (sub > GroupAddress.MAX_SUB_LONG) {
-          throw new CouldNotParseAddress(address, `Sub out of range (0..${GroupAddress.MAX_SUB_LONG})`);
+          throw new CouldNotParseAddress(
+            address,
+            `Sub out of range (0..${GroupAddress.MAX_SUB_LONG})`,
+          );
         }
         return (main << 11) | (middle << 8) | sub;
       }
       if (sub > GroupAddress.MAX_SUB_SHORT) {
-        throw new CouldNotParseAddress(address, `Sub out of range (0..${GroupAddress.MAX_SUB_SHORT})`);
+        throw new CouldNotParseAddress(
+          address,
+          `Sub out of range (0..${GroupAddress.MAX_SUB_SHORT})`,
+        );
       }
       return (main << 11) | sub;
     }

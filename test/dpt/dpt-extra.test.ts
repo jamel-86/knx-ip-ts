@@ -191,9 +191,6 @@ describe('DPT 232.600 (RGB)', () => {
 
   it('rejects out-of-range component', () => {
     const codec = getDpt('232.600') as DPTCodec<RGBColor>;
-    assert.throws(
-      () => codec.encode({ red: 256, green: 0, blue: 0 }),
-      ConversionError,
-    );
+    assert.throws(() => codec.encode({ red: 256, green: 0, blue: 0 }), ConversionError);
   });
 });

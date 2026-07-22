@@ -18,10 +18,7 @@ describe('parseEtsCsv', () => {
   });
 
   it('handles semicolon delimiter (German locale exports)', () => {
-    const csv = [
-      'Adresse;Datapunkttyp;Beschreibung',
-      '1/2/3;DPST-1-1;Wohnzimmer Decke',
-    ].join('\n');
+    const csv = ['Adresse;Datapunkttyp;Beschreibung', '1/2/3;DPST-1-1;Wohnzimmer Decke'].join('\n');
     const { rows } = parseEtsCsv(csv);
     assert.equal(rows.length, 1);
     assert.equal(rows[0]!.ga, '1/2/3');

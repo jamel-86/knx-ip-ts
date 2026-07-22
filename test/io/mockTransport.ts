@@ -59,12 +59,14 @@ export class MockTransport extends EventEmitter {
     );
   }
 
-  injectConnectResponse(opts: {
-    channelId?: number;
-    assignedAddress?: string;
-    statusCode?: ErrorCode;
-    dataEndpoint?: HPAI;
-  } = {}): void {
+  injectConnectResponse(
+    opts: {
+      channelId?: number;
+      assignedAddress?: string;
+      statusCode?: ErrorCode;
+      dataEndpoint?: HPAI;
+    } = {},
+  ): void {
     this.inject(
       KNXIPFrame.fromBody(
         new ConnectResponse({
@@ -86,8 +88,6 @@ export class MockTransport extends EventEmitter {
   }
 
   injectDisconnectResponse(channelId = 1): void {
-    this.inject(
-      KNXIPFrame.fromBody(new DisconnectResponse({ communicationChannelId: channelId })),
-    );
+    this.inject(KNXIPFrame.fromBody(new DisconnectResponse({ communicationChannelId: channelId })));
   }
 }

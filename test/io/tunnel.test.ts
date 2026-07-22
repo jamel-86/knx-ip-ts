@@ -1,5 +1,6 @@
 import { strict as assert } from 'node:assert';
 import { describe, it } from 'node:test';
+import { GroupAddress, IndividualAddress } from '../../src/core/address';
 import { groupValueWrite, smallValue } from '../../src/core/apci';
 import {
   ConnectRequest,
@@ -8,8 +9,13 @@ import {
   TunnellingAck,
   TunnellingRequest,
 } from '../../src/core/bodies';
-import { CEMIFlags, CEMIFrame, CEMILData, CEMIMessageCode, DEFAULT_OUTGOING_FLAGS } from '../../src/core/cemi';
-import { GroupAddress, IndividualAddress } from '../../src/core/address';
+import {
+  CEMIFlags,
+  CEMIFrame,
+  CEMILData,
+  CEMIMessageCode,
+  DEFAULT_OUTGOING_FLAGS,
+} from '../../src/core/cemi';
 import { KNXIPFrame } from '../../src/core/knxipFrame';
 import { ErrorCode, ServiceType } from '../../src/core/serviceTypes';
 import { tDataGroup } from '../../src/core/tpci';
@@ -41,10 +47,7 @@ function makeIncomingTunnellingRequest(
   const cemi = new CEMIFrame({
     code: CEMIMessageCode.L_DATA_IND,
     data: new CEMILData({
-      flags:
-        DEFAULT_OUTGOING_FLAGS |
-        CEMIFlags.DESTINATION_GROUP_ADDRESS |
-        CEMIFlags.PRIORITY_LOW,
+      flags: DEFAULT_OUTGOING_FLAGS | CEMIFlags.DESTINATION_GROUP_ADDRESS | CEMIFlags.PRIORITY_LOW,
       srcAddr: new IndividualAddress('1.1.5'),
       dstAddr: ga,
       tpci: tDataGroup(),
@@ -208,11 +211,7 @@ describe('TunnelClient inbound DISCONNECT_REQUEST', () => {
     // EventEmitter doesn't re-throw.
     client.on('error', () => {});
 
-    transport.inject(
-      KNXIPFrame.fromBody(
-        new DisconnectRequest({ communicationChannelId: 8 }),
-      ),
-    );
+    transport.inject(KNXIPFrame.fromBody(new DisconnectRequest({ communicationChannelId: 8 })));
     // Allow the async send of DisconnectResponse to enqueue
     await Promise.resolve();
     await Promise.resolve();
@@ -285,14 +284,8 @@ describe('TunnelClient multi-tunnel', () => {
     const wA = clientA.groupValueWrite('1/2/3', smallValue(1));
     await Promise.resolve();
     await Promise.resolve();
-    assert.equal(
-      transA.sent.filter((s) => s.frame.body instanceof TunnellingRequest).length,
-      1,
-    );
-    assert.equal(
-      transB.sent.filter((s) => s.frame.body instanceof TunnellingRequest).length,
-      0,
-    );
+    assert.equal(transA.sent.filter((s) => s.frame.body instanceof TunnellingRequest).length, 1);
+    assert.equal(transB.sent.filter((s) => s.frame.body instanceof TunnellingRequest).length, 0);
     transA.ackLast();
     await wA;
   });

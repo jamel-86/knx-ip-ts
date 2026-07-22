@@ -55,10 +55,7 @@ describe('renderJsonTemplate — typed pure-placeholder', () => {
   });
 
   it('walks nested objects + arrays', () => {
-    const r = renderJsonTemplate(
-      '{"a": [{"v": "{value}"}, "static"]}',
-      { value: 5 },
-    );
+    const r = renderJsonTemplate('{"a": [{"v": "{value}"}, "static"]}', { value: 5 });
     assert.equal(r.ok, true);
     assert.deepEqual(r.value, { a: [{ v: 5 }, 'static'] });
   });

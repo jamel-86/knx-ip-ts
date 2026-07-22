@@ -9,16 +9,13 @@ import {
   CEMIMessageCode,
   DEFAULT_OUTGOING_FLAGS,
 } from '../../src/core/cemi';
-import { CouldNotParseCEMI, ConversionError } from '../../src/core/errors';
+import { ConversionError, CouldNotParseCEMI } from '../../src/core/errors';
 import { tConnect, tDataGroup, tDataIndividual } from '../../src/core/tpci';
 
 describe('CEMILData', () => {
   it('serializes a GroupValueRead L_DATA_REQ', () => {
     const data = new CEMILData({
-      flags:
-        DEFAULT_OUTGOING_FLAGS |
-        CEMIFlags.DESTINATION_GROUP_ADDRESS |
-        CEMIFlags.PRIORITY_LOW,
+      flags: DEFAULT_OUTGOING_FLAGS | CEMIFlags.DESTINATION_GROUP_ADDRESS | CEMIFlags.PRIORITY_LOW,
       srcAddr: new IndividualAddress('1.1.5'),
       dstAddr: new GroupAddress('1/2/3'),
       tpci: tDataGroup(),
@@ -36,10 +33,7 @@ describe('CEMILData', () => {
 
   it('serializes a GroupValueWrite small=1 (1-bit boolean true)', () => {
     const data = new CEMILData({
-      flags:
-        DEFAULT_OUTGOING_FLAGS |
-        CEMIFlags.DESTINATION_GROUP_ADDRESS |
-        CEMIFlags.PRIORITY_LOW,
+      flags: DEFAULT_OUTGOING_FLAGS | CEMIFlags.DESTINATION_GROUP_ADDRESS | CEMIFlags.PRIORITY_LOW,
       srcAddr: new IndividualAddress('1.1.5'),
       dstAddr: new GroupAddress('1/2/3'),
       tpci: tDataGroup(),
@@ -54,10 +48,7 @@ describe('CEMILData', () => {
 
   it('round-trips a GroupValueWrite small over the bus', () => {
     const original = new CEMILData({
-      flags:
-        DEFAULT_OUTGOING_FLAGS |
-        CEMIFlags.DESTINATION_GROUP_ADDRESS |
-        CEMIFlags.PRIORITY_LOW,
+      flags: DEFAULT_OUTGOING_FLAGS | CEMIFlags.DESTINATION_GROUP_ADDRESS | CEMIFlags.PRIORITY_LOW,
       srcAddr: new IndividualAddress('1.1.10'),
       dstAddr: new GroupAddress('5/3/7'),
       tpci: tDataGroup(),
@@ -79,10 +70,7 @@ describe('CEMILData', () => {
 
   it('round-trips a GroupValueWrite bytes (2-byte payload)', () => {
     const original = new CEMILData({
-      flags:
-        DEFAULT_OUTGOING_FLAGS |
-        CEMIFlags.DESTINATION_GROUP_ADDRESS |
-        CEMIFlags.PRIORITY_LOW,
+      flags: DEFAULT_OUTGOING_FLAGS | CEMIFlags.DESTINATION_GROUP_ADDRESS | CEMIFlags.PRIORITY_LOW,
       srcAddr: new IndividualAddress('1.1.10'),
       dstAddr: new GroupAddress('5/3/7'),
       tpci: tDataGroup(),
@@ -126,11 +114,15 @@ describe('CEMILData', () => {
   it('detects mismatched NPDU length', () => {
     // Build a frame with NPDU length 5 but only 2 APDU bytes available
     const buf = Buffer.from([
-      0xbc, 0x00, // flags
-      0x11, 0x05, // src
-      0x09, 0x03, // dst (group)
+      0xbc,
+      0x00, // flags
+      0x11,
+      0x05, // src
+      0x09,
+      0x03, // dst (group)
       0x05, // npdu length (claims 5)
-      0x00, 0x80, // APDU only 2 bytes
+      0x00,
+      0x80, // APDU only 2 bytes
     ]);
     assert.throws(() => CEMILData.fromKnx(buf), CouldNotParseCEMI);
   });
@@ -153,10 +145,7 @@ describe('CEMILData', () => {
 describe('CEMIFrame', () => {
   it('round-trips a full L_DATA_IND frame', () => {
     const ld = new CEMILData({
-      flags:
-        DEFAULT_OUTGOING_FLAGS |
-        CEMIFlags.DESTINATION_GROUP_ADDRESS |
-        CEMIFlags.PRIORITY_LOW,
+      flags: DEFAULT_OUTGOING_FLAGS | CEMIFlags.DESTINATION_GROUP_ADDRESS | CEMIFlags.PRIORITY_LOW,
       srcAddr: new IndividualAddress('1.1.42'),
       dstAddr: new GroupAddress('2/4/8'),
       tpci: tDataGroup(),

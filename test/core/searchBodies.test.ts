@@ -1,10 +1,7 @@
 import { strict as assert } from 'node:assert';
 import { describe, it } from 'node:test';
 import { IndividualAddress } from '../../src/core/address';
-import {
-  SearchRequest,
-  SearchResponse,
-} from '../../src/core/bodies';
+import { SearchRequest, SearchResponse } from '../../src/core/bodies';
 import type { DeviceInfoDIB } from '../../src/core/bodies/searchResponse';
 import { HPAI } from '../../src/core/hpai';
 import { KNXIPFrame } from '../../src/core/knxipFrame';

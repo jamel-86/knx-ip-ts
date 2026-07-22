@@ -41,17 +41,16 @@ export class ConnectResponse {
     const channelId = raw[offset]!;
     const statusCode = raw[offset + 1]! as ErrorCode;
 
-    if (statusCode !== ErrorCode.E_NO_ERROR) {
-      // Error responses omit the HPAI/CRD per spec; consume only the 2 status bytes.
+    // HPAI + CRD are part of the fixed CONNECT_RESPONSE body and are sent by
+    // real servers (Gira / Weinzierl / MDT) even on a non-zero status. Parse
+    // them whenever present; only fall back to a 2-byte error frame for legacy
+    // senders that genuinely omit them.
+    if (available < 2 + HPAI.LENGTH) {
       return {
-        body: new ConnectResponse({
-          communicationChannelId: channelId,
-          statusCode,
-        }),
+        body: new ConnectResponse({ communicationChannelId: channelId, statusCode }),
         bytesRead: 2,
       };
     }
-
     let pos = offset + 2;
     const hpai = HPAI.fromKnx(raw, pos);
     pos += hpai.bytesRead;

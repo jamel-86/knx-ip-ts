@@ -1,5 +1,5 @@
-import dgram from 'node:dgram';
 import { strict as assert } from 'node:assert';
+import dgram from 'node:dgram';
 import { describe, it } from 'node:test';
 import { TunnellingAck } from '../../src/core/bodies';
 import { KNXIPFrame } from '../../src/core/knxipFrame';

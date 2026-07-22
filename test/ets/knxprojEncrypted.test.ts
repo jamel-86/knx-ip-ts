@@ -1,18 +1,15 @@
 import { strict as assert } from 'node:assert';
 import { existsSync, readFileSync } from 'node:fs';
 import { describe, it } from 'node:test';
-import {
-  KnxprojBadPassword,
-  KnxprojPasswordRequired,
-  parseKnxproj,
-} from '../../src/ets/knxproj';
+import { KnxprojBadPassword, KnxprojPasswordRequired, parseKnxproj } from '../../src/ets/knxproj';
 import { ETSProjectMap } from '../../src/ets/projectMap';
 
-// Live fixture — only runs locally when the user's encrypted ETS6 export is
-// present in the project root. The file is gitignored (*.knxproj).
-const FIXTURE_PATH = '/home/innovera/projects/software/eelectron-knxip/KNX Secure (1).knxproj';
-const FIXTURE_PASSWORD = 'furious';
-const SKIP = !existsSync(FIXTURE_PATH);
+// Live fixture — only runs locally when an encrypted ETS6 export is present at
+// ./fixtures/secure.knxproj (gitignored: *.knxproj). Provide its password via
+// the KNXPROJ_TEST_PASSWORD env var.
+const FIXTURE_PATH = './fixtures/secure.knxproj';
+const FIXTURE_PASSWORD = process.env.KNXPROJ_TEST_PASSWORD ?? '';
+const SKIP = !existsSync(FIXTURE_PATH) || !FIXTURE_PASSWORD;
 
 describe('parseKnxproj against an encrypted ETS6 export', () => {
   it('throws KnxprojPasswordRequired when no password is provided', { skip: SKIP }, () => {

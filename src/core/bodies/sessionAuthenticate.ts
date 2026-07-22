@@ -40,15 +40,17 @@ export class SessionAuthenticate {
     return SessionAuthenticate.LENGTH;
   }
 
-  static fromKnx(
-    raw: Buffer,
-    offset = 0,
-  ): { body: SessionAuthenticate; bytesRead: number } {
+  static fromKnx(raw: Buffer, offset = 0): { body: SessionAuthenticate; bytesRead: number } {
     if (raw.length - offset < SessionAuthenticate.LENGTH) {
       throw new CouldNotParseKNXIP('SESSION_AUTHENTICATE too short');
     }
     // raw[offset] is reserved (0x00); we don't validate, but we don't include it
     const userId = raw[offset + 1]!;
+    if (!Number.isInteger(userId) || userId < 1 || userId > 127) {
+      throw new CouldNotParseKNXIP(
+        `SESSION_AUTHENTICATE user id out of range (1..127): ${userId}`,
+      );
+    }
     const mac = Buffer.from(raw.subarray(offset + 2, offset + 2 + SECURE_MAC_LEN));
     return {
       body: new SessionAuthenticate({ userId, mac }),

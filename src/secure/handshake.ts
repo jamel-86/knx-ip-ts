@@ -1,6 +1,6 @@
 // KNX/IP Secure handshake MAC helpers.
 //
-// Author: Jamel Nacef <jamel.nacef@eelectron.com>
+// Author: Jamel Nacef <jamelnacef@icloud.com>
 // SPDX-License-Identifier: Apache-2.0
 //
 // The handshake MAC is computed as a KNX-flavoured CBC-MAC and then encrypted
@@ -16,10 +16,7 @@
 import { aesCbcMac, aesCtrXor, bytesXor } from './crypto';
 
 /** Fixed 16-byte initial counter for handshake CTR encryption. */
-export const COUNTER_0_HANDSHAKE = Buffer.from([
-  0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0xff, 0,
-]);
+export const COUNTER_0_HANDSHAKE = Buffer.from([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0]);
 
 const SESSION_RESPONSE_HEADER = Buffer.from([0x06, 0x10, 0x09, 0x52, 0x00, 0x38]);
 const SESSION_AUTHENTICATE_HEADER = Buffer.from([0x06, 0x10, 0x09, 0x53, 0x00, 0x18]);

@@ -25,6 +25,18 @@ function makeStringCodec(id: string, name: string, encoding: 'ascii' | 'latin1')
       if (typeof value !== 'string') {
         throw new ConversionError(`DPT ${id}: value must be a string, got ${typeof value}`);
       }
+      // Reject characters the chosen encoding can't represent verbatim —
+      // Buffer.from(s,'ascii') otherwise silently masks >0x7f to the low 7
+      // bits (e.g. "Café" → "Cafi"), which is on-wire corruption.
+      const max = encoding === 'ascii' ? 0x7f : 0xff;
+      for (let i = 0; i < value.length; i++) {
+        const c = value.charCodeAt(i);
+        if (c > max) {
+          throw new ConversionError(
+            `DPT ${id}: character U+${c.toString(16).toUpperCase().padStart(4, '0')} is not representable in ${encoding}`,
+          );
+        }
+      }
       const encoded = Buffer.from(value, encoding);
       if (encoded.length > STRING_LENGTH) {
         throw new ConversionError(

@@ -85,9 +85,7 @@ export class SearchResponse {
   }
 
   calculatedLength(): number {
-    return (
-      HPAI.LENGTH + (this.deviceInfo ? DIB_DEVICE_INFO_LEN : 0) + this.trailingDibs.length
-    );
+    return HPAI.LENGTH + (this.deviceInfo ? DIB_DEVICE_INFO_LEN : 0) + this.trailingDibs.length;
   }
 
   static fromKnx(raw: Buffer, offset = 0): { body: SearchResponse; bytesRead: number } {

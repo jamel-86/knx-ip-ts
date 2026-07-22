@@ -12,23 +12,17 @@ import {
 import { KNXIPFrame } from '../../src/core/knxipFrame';
 import { ServiceType } from '../../src/core/serviceTypes';
 import { SecureSession } from '../../src/io/secureSession';
-import {
-  generateX25519KeyPair,
-  x25519SharedSecret,
-} from '../../src/secure/crypto';
-import {
-  computeAuthenticateMac,
-  computeSessionResponseMac,
-} from '../../src/secure/handshake';
+// (encryptSecureWrapper used in the second describe block to synthesise a
+// server-side wrapped frame for the client to decrypt.)
+import type { SocketAddress } from '../../src/io/udpTransport';
+import { generateX25519KeyPair, x25519SharedSecret } from '../../src/secure/crypto';
+import { computeAuthenticateMac, computeSessionResponseMac } from '../../src/secure/handshake';
 import {
   deriveDeviceAuthCode,
   deriveSessionKey,
   deriveUserPasswordKey,
 } from '../../src/secure/keys';
 import { decryptSecureWrapper, encryptSecureWrapper } from '../../src/secure/wrapper';
-// (encryptSecureWrapper used in the second describe block to synthesise a
-// server-side wrapped frame for the client to decrypt.)
-import type { SocketAddress } from '../../src/io/udpTransport';
 
 /**
  * MockTransport is a paired bidirectional pipe — each side gets a "send"
@@ -51,9 +45,7 @@ class MockTransport extends EventEmitter {
       const parsed = KNXIPFrame.fromKnx(buf).frame;
       // setImmediate (not queueMicrotask) so node:test's event-loop tracker
       // sees the pending work and doesn't cancel awaits prematurely.
-      setImmediate(() =>
-        this.peer!.emit('message', parsed, { address: '127.0.0.1', port: 0 }),
-      );
+      setImmediate(() => this.peer!.emit('message', parsed, { address: '127.0.0.1', port: 0 }));
     }
     return Promise.resolve();
   }
@@ -236,15 +228,17 @@ describe('SecureSession handshake', () => {
 
     // First TX: plain SESSION_REQUEST. Second TX: SECURE_WRAPPER carrying
     // SESSION_AUTHENTICATE — never a plain SESSION_AUTHENTICATE.
-    const sessionAuthIdx = sentFromClient.findIndex(
-      (f) => f.body instanceof SessionAuthenticate,
-    );
+    const sessionAuthIdx = sentFromClient.findIndex((f) => f.body instanceof SessionAuthenticate);
     assert.equal(
       sessionAuthIdx,
       -1,
       'SESSION_AUTHENTICATE must NOT be sent plain — wrap it in a SECURE_WRAPPER',
     );
-    assert.equal(sentFromClient[0]!.body instanceof SessionRequest, true, '1st TX should be SESSION_REQUEST');
+    assert.equal(
+      sentFromClient[0]!.body instanceof SessionRequest,
+      true,
+      '1st TX should be SESSION_REQUEST',
+    );
     assert.equal(
       sentFromClient[1]!.body instanceof SecureWrapper,
       true,
@@ -434,5 +428,63 @@ describe('SecureSession encrypted send/receive', () => {
 
     assert.equal(received.length, 1);
     assert.equal(received[0]!.header.serviceType, ServiceType.TUNNELLING_REQUEST);
+  });
+
+  // Anti-replay (KNX/IP Secure 03_08_09): a client MUST track the peer's
+  // sequence counter and drop a wrapped frame whose sequenceId is not greater
+  // than the last one accepted. Without it, a passive attacker who captures any
+  // gateway->client frame can replay it verbatim (its MAC is still valid) and
+  // the client honours the stale telegram. This test emits the SAME wrapped
+  // frame twice and expects exactly one 'message' to surface.
+  it('rejects a replayed SECURE_WRAPPER (same sequenceId) — anti-replay', async () => {
+    const { client, server } = pair();
+    const session = new SecureSession(client, {
+      userId: 2,
+      deviceAuthPassword: 'device-pass',
+      userPassword: 'user-pass',
+      keepaliveMs: 0,
+    });
+    await client.bind();
+    await session.open();
+
+    const received: KNXIPFrame[] = [];
+    session.on('message', (frame: KNXIPFrame) => received.push(frame));
+
+    const buildWrapped = (seq: number): KNXIPFrame => {
+      const tr = new TunnellingRequest({
+        communicationChannelId: 1,
+        sequenceCounter: 5,
+        rawCemi: Buffer.from('29 00 bc e0 11 11 22 22 01 00 80'.replace(/\s+/g, ''), 'hex'),
+      });
+      const enc = encryptSecureWrapper({
+        sessionKey: server.sessionKey!,
+        sessionId: server.sessionId,
+        sequenceId: seq,
+        serialNumber: 1,
+        messageTag: 0,
+        plainFrame: KNXIPFrame.fromBody(tr).toKnx(),
+      });
+      const f = KNXIPFrame.fromBody(
+        new SecureWrapper({
+          sessionId: server.sessionId,
+          sequenceId: seq,
+          serialNumber: 1,
+          messageTag: 0,
+          encryptedFrame: enc.encryptedFrame,
+          mac: enc.mac,
+        }),
+      );
+      return KNXIPFrame.fromKnx(f.toKnx()).frame;
+    };
+
+    const replayed = buildWrapped(10);
+    client.emit('message', replayed, { address: '127.0.0.1', port: 0 }); // 1st — accept
+    client.emit('message', replayed, { address: '127.0.0.1', port: 0 }); // replay — must drop
+
+    assert.equal(
+      received.length,
+      1,
+      'a replayed (same-sequence) SECURE_WRAPPER must be rejected, not re-delivered',
+    );
   });
 });

@@ -1,4 +1,4 @@
-# web-monitor — example React + Node app using `@jamel-86/knx-ip-ts`
+# web-monitor — example React + Node app using `@jamel-knx/knx-ip-ts`
 
 A small reference app that demonstrates the library end-to-end:
 

@@ -1,10 +1,11 @@
 // In-memory ring buffer + emitter for KNX/IP bus telegrams.
 //
-// Author: Jamel Nacef <jamel.nacef@eelectron.com>
+// Author: Jamel Nacef <jamelnacef@icloud.com>
 // SPDX-License-Identifier: Apache-2.0
 //
-// One singleton per Node-RED process. Tunnel-config nodes push records as
-// telegrams arrive; the editor's bus-monitor sidebar subscribes via SSE.
+// One bounded ring buffer per instance. Callers push a record each time a
+// telegram arrives; consumers read the history and/or subscribe for live
+// updates (EventEmitter).
 //
 // Buffer is bounded so a quiet operator doesn't bloat memory across uptime;
 // the cap is per-process, not per-tunnel.

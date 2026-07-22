@@ -15,9 +15,7 @@ const codec: DPTCodec<number> = {
   },
   encode(value: number): APDUValue {
     if (!Number.isInteger(value) || value < 0 || value > 63) {
-      throw new ConversionError(
-        `DPT 17.001: scene number must be 0..63, got ${value}`,
-      );
+      throw new ConversionError(`DPT 17.001: scene number must be 0..63, got ${value}`);
     }
     return { kind: 'bytes', value: Buffer.from([value & 0x3f]) };
   },

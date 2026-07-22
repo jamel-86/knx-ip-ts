@@ -19,9 +19,7 @@ function makeUint32(id: string, name: string, unit?: string): DPTCodec<number> {
     decode: (apdu) => readUint32(apdu, id),
     encode(value: number): APDUValue {
       if (!Number.isInteger(value) || value < 0 || value > 0xffff_ffff) {
-        throw new ConversionError(
-          `DPT ${id}: value must be integer 0..4294967295, got ${value}`,
-        );
+        throw new ConversionError(`DPT ${id}: value must be integer 0..4294967295, got ${value}`);
       }
       const buf = Buffer.alloc(4);
       buf.writeUInt32BE(value, 0);

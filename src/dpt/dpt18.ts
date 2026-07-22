@@ -27,9 +27,7 @@ const codec: DPTCodec<DPT18Value> = {
   },
   encode(v: DPT18Value): APDUValue {
     if (!Number.isInteger(v.sceneNumber) || v.sceneNumber < 0 || v.sceneNumber > 63) {
-      throw new ConversionError(
-        `DPT 18.001: scene number must be 0..63, got ${v.sceneNumber}`,
-      );
+      throw new ConversionError(`DPT 18.001: scene number must be 0..63, got ${v.sceneNumber}`);
     }
     const raw = (v.control === 'learn' ? 0x80 : 0x00) | (v.sceneNumber & 0x3f);
     return { kind: 'bytes', value: Buffer.from([raw]) };

@@ -144,9 +144,6 @@ describe('DPT 251.600 (RGBW)', () => {
   });
   it('rejects out-of-range channel value', () => {
     const codec = getDpt('251.600') as DPTCodec<RGBWColor>;
-    assert.throws(
-      () => codec.encode({ red: 256, green: 0, blue: 0, white: 0 }),
-      ConversionError,
-    );
+    assert.throws(() => codec.encode({ red: 256, green: 0, blue: 0, white: 0 }), ConversionError);
   });
 });

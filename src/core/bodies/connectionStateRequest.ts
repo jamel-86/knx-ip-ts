@@ -27,10 +27,7 @@ export class ConnectionStateRequest {
     return 2 + HPAI.LENGTH;
   }
 
-  static fromKnx(
-    raw: Buffer,
-    offset = 0,
-  ): { body: ConnectionStateRequest; bytesRead: number } {
+  static fromKnx(raw: Buffer, offset = 0): { body: ConnectionStateRequest; bytesRead: number } {
     if (raw.length - offset < 2 + HPAI.LENGTH) {
       throw new CouldNotParseKNXIP('CONNECTIONSTATE_REQUEST too short');
     }

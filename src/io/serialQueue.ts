@@ -10,12 +10,19 @@ export class SerialQueue {
   run<T>(task: () => Promise<T>): Promise<T> {
     this._depth += 1;
     const next = this._tail.then(task, task);
-    // Catch to avoid unhandled-rejection on the chain itself; per-call result
-    // still rejects normally because we return `next`.
-    this._tail = next.catch(() => undefined);
-    next.finally(() => {
-      this._depth -= 1;
-    });
+    // Decrement + guard the chain in ONE derived promise. The rejection handler
+    // swallows the error so the chain stays fulfilled for the next queued task
+    // (the per-call result still rejects normally — we return `next`). Do NOT
+    // use a separate `next.finally(...)`: that creates an orphan promise which
+    // re-emits the rejection unhandled and crashes the process under default Node.
+    this._tail = next.then(
+      () => {
+        this._depth -= 1;
+      },
+      () => {
+        this._depth -= 1;
+      },
+    );
     return next;
   }
 

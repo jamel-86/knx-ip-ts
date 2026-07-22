@@ -18,8 +18,8 @@
 
 import { GroupAddress, IndividualAddress } from './address';
 import { type APCI, apciNpduLength, decodeApci, encodeApci } from './apci';
-import { CouldNotParseCEMI, ConversionError } from './errors';
-import { encodeTpci, isControlTpci, resolveTpci, type TPCI } from './tpci';
+import { ConversionError, CouldNotParseCEMI } from './errors';
+import { type TPCI, encodeTpci, isControlTpci, resolveTpci } from './tpci';
 
 export const CEMIMessageCode = {
   L_DATA_REQ: 0x11,
@@ -177,9 +177,7 @@ export class CEMILData {
     // Data TPDU: APDU length = NPDU length + 1; first APDU byte has TPCI bits cleared
     const apduLen = npduLen + 1;
     if (tpduLen < apduLen) {
-      throw new CouldNotParseCEMI(
-        `APDU truncated: expected ${apduLen} bytes, got ${tpduLen}`,
-      );
+      throw new CouldNotParseCEMI(`APDU truncated: expected ${apduLen} bytes, got ${tpduLen}`);
     }
     const apdu = Buffer.alloc(apduLen);
     apdu[0] = tpciByte & 0b11;

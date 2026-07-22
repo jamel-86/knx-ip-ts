@@ -65,7 +65,9 @@ export class TcpTransport extends EventEmitter {
       const timer = setTimeout(() => {
         cleanup();
         socket.destroy();
-        reject(new Error(`TCP connect timeout to ${this._opts.remoteAddress}:${this._opts.remotePort}`));
+        reject(
+          new Error(`TCP connect timeout to ${this._opts.remoteAddress}:${this._opts.remotePort}`),
+        );
       }, this._opts.connectTimeoutMs ?? 10_000);
       timer.unref?.();
 
@@ -73,7 +75,10 @@ export class TcpTransport extends EventEmitter {
         cleanup();
         const addr = socket.address();
         if (addr && typeof addr === 'object' && 'port' in addr) {
-          this._localAddr = { address: (addr as net.AddressInfo).address, port: (addr as net.AddressInfo).port };
+          this._localAddr = {
+            address: (addr as net.AddressInfo).address,
+            port: (addr as net.AddressInfo).port,
+          };
         } else {
           this._localAddr = { address: '0.0.0.0', port: 0 };
         }
@@ -134,7 +139,12 @@ export class TcpTransport extends EventEmitter {
         // Header looked malformed. Surface as 'raw' and skip a byte to try
         // to resync — better than getting stuck.
         const source = this._sourceFromSocket();
-        this.emit('raw', Buffer.from(this._rxBuf.subarray(0, KNXIPHeader.LENGTH)), source, err as Error);
+        this.emit(
+          'raw',
+          Buffer.from(this._rxBuf.subarray(0, KNXIPHeader.LENGTH)),
+          source,
+          err as Error,
+        );
         this._rxBuf = Buffer.from(this._rxBuf.subarray(1));
         continue;
       }

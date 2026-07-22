@@ -86,11 +86,7 @@ export function encodeTpci(tpci: TPCI): number {
  * appropriate TPCI variant. The caller supplies destination context because
  * group/broadcast/individual all share `control=0, numbered=0`.
  */
-export function resolveTpci(
-  rawTpci: number,
-  dstIsGroupAddress: boolean,
-  dstIsZero: boolean,
-): TPCI {
+export function resolveTpci(rawTpci: number, dstIsGroupAddress: boolean, dstIsZero: boolean): TPCI {
   const control = (rawTpci & CONTROL_BIT) !== 0;
   const numbered = (rawTpci & NUMBERED_BIT) !== 0;
   const sequenceNumber = (rawTpci >> 2) & 0x0f;
@@ -124,7 +120,5 @@ export function resolveTpci(
     if (controlFlags === 0b11) return tNak(sequenceNumber);
   }
 
-  throw new ConversionError(
-    `Unknown TPCI 0b${rawTpci.toString(2).padStart(8, '0')}`,
-  );
+  throw new ConversionError(`Unknown TPCI 0b${rawTpci.toString(2).padStart(8, '0')}`);
 }

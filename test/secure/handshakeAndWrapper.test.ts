@@ -18,10 +18,7 @@ import {
   deriveSessionKey,
   deriveUserPasswordKey,
 } from '../../src/secure/keys';
-import {
-  decryptSecureWrapper,
-  encryptSecureWrapper,
-} from '../../src/secure/wrapper';
+import { decryptSecureWrapper, encryptSecureWrapper } from '../../src/secure/wrapper';
 
 const hex = (s: string) => Buffer.from(s.replace(/\s+/g, ''), 'hex');
 
@@ -59,14 +56,16 @@ describe('keys.ts — KNX-specific KDFs', () => {
 describe('aesCbcMac', () => {
   it('produces a 16-byte MAC', () => {
     const key = hex('00112233445566778899aabbccddeeff');
-    const mac = aesCbcMac({ key, additionalData: Buffer.from('hello'), payload: Buffer.from('world') });
+    const mac = aesCbcMac({
+      key,
+      additionalData: Buffer.from('hello'),
+      payload: Buffer.from('world'),
+    });
     assert.equal(mac.length, 16);
   });
 
   it('rejects non-16-byte keys / block_0', () => {
-    assert.throws(() =>
-      aesCbcMac({ key: Buffer.alloc(15), additionalData: Buffer.alloc(0) }),
-    );
+    assert.throws(() => aesCbcMac({ key: Buffer.alloc(15), additionalData: Buffer.alloc(0) }));
     assert.throws(() =>
       aesCbcMac({
         key: Buffer.alloc(16),
@@ -84,10 +83,27 @@ describe('aesCbcMac', () => {
       payload: Buffer.from([4, 5, 6]),
       block0: Buffer.alloc(16, 0),
     });
-    const v1 = aesCbcMac({ key, additionalData: Buffer.from([1, 2, 4]), payload: Buffer.from([4, 5, 6]) });
-    const v2 = aesCbcMac({ key, additionalData: Buffer.from([1, 2, 3]), payload: Buffer.from([4, 5, 7]) });
-    const v3 = aesCbcMac({ key, additionalData: Buffer.from([1, 2, 3]), payload: Buffer.from([4, 5, 6]), block0: Buffer.alloc(16, 1) });
-    const v4 = aesCbcMac({ key: Buffer.alloc(16, 1), additionalData: Buffer.from([1, 2, 3]), payload: Buffer.from([4, 5, 6]) });
+    const v1 = aesCbcMac({
+      key,
+      additionalData: Buffer.from([1, 2, 4]),
+      payload: Buffer.from([4, 5, 6]),
+    });
+    const v2 = aesCbcMac({
+      key,
+      additionalData: Buffer.from([1, 2, 3]),
+      payload: Buffer.from([4, 5, 7]),
+    });
+    const v3 = aesCbcMac({
+      key,
+      additionalData: Buffer.from([1, 2, 3]),
+      payload: Buffer.from([4, 5, 6]),
+      block0: Buffer.alloc(16, 1),
+    });
+    const v4 = aesCbcMac({
+      key: Buffer.alloc(16, 1),
+      additionalData: Buffer.from([1, 2, 3]),
+      payload: Buffer.from([4, 5, 6]),
+    });
     assert.notDeepEqual(base, v1);
     assert.notDeepEqual(base, v2);
     assert.notDeepEqual(base, v3);
@@ -139,31 +155,58 @@ describe('handshake MACs', () => {
       clientPublicKey: clientPub,
       serverPublicKey: serverPub,
     };
-    assert.deepEqual(
-      computeSessionResponseMac(args),
-      computeSessionResponseMac(args),
-    );
+    assert.deepEqual(computeSessionResponseMac(args), computeSessionResponseMac(args));
   });
 
   it('computeSessionResponseMac changes with sessionId', () => {
-    const a = computeSessionResponseMac({ deviceAuthCode, sessionId: 1, clientPublicKey: clientPub, serverPublicKey: serverPub });
-    const b = computeSessionResponseMac({ deviceAuthCode, sessionId: 2, clientPublicKey: clientPub, serverPublicKey: serverPub });
+    const a = computeSessionResponseMac({
+      deviceAuthCode,
+      sessionId: 1,
+      clientPublicKey: clientPub,
+      serverPublicKey: serverPub,
+    });
+    const b = computeSessionResponseMac({
+      deviceAuthCode,
+      sessionId: 2,
+      clientPublicKey: clientPub,
+      serverPublicKey: serverPub,
+    });
     assert.notDeepEqual(a, b);
   });
 
   it('computeAuthenticateMac returns 16 bytes and is deterministic', () => {
-    const m1 = computeAuthenticateMac({ userPasswordKey: userKey, userId: 1, clientPublicKey: clientPub, serverPublicKey: serverPub });
-    const m2 = computeAuthenticateMac({ userPasswordKey: userKey, userId: 1, clientPublicKey: clientPub, serverPublicKey: serverPub });
+    const m1 = computeAuthenticateMac({
+      userPasswordKey: userKey,
+      userId: 1,
+      clientPublicKey: clientPub,
+      serverPublicKey: serverPub,
+    });
+    const m2 = computeAuthenticateMac({
+      userPasswordKey: userKey,
+      userId: 1,
+      clientPublicKey: clientPub,
+      serverPublicKey: serverPub,
+    });
     assert.equal(m1.length, 16);
     assert.deepEqual(m1, m2);
   });
 
   it('computeAuthenticateMac rejects out-of-range user IDs', () => {
     assert.throws(() =>
-      computeAuthenticateMac({ userPasswordKey: userKey, userId: 0, clientPublicKey: clientPub, serverPublicKey: serverPub }),
+      computeAuthenticateMac({
+        userPasswordKey: userKey,
+        userId: 0,
+        clientPublicKey: clientPub,
+        serverPublicKey: serverPub,
+      }),
     );
     assert.throws(() =>
-      computeAuthenticateMac({ userPasswordKey: userKey, userId: 200, clientPublicKey: clientPub, serverPublicKey: serverPub }),
+      computeAuthenticateMac({
+        userPasswordKey: userKey,
+        userId: 200,
+        clientPublicKey: clientPub,
+        serverPublicKey: serverPub,
+      }),
     );
   });
 
@@ -178,10 +221,7 @@ describe('handshake MACs', () => {
 
 describe('encrypt / decrypt SECURE_WRAPPER round-trip', () => {
   const sessionKey = hex('aabbccddeeff00112233445566778899');
-  const plainFrame = Buffer.from(
-    '06 10 04 21 00 0a 04 01 2a 00'.replace(/\s+/g, ''),
-    'hex',
-  );
+  const plainFrame = Buffer.from('06 10 04 21 00 0a 04 01 2a 00'.replace(/\s+/g, ''), 'hex');
 
   it('decrypt(encrypt(plain)) === plain with the same context', () => {
     const ctx = {
@@ -207,9 +247,7 @@ describe('encrypt / decrypt SECURE_WRAPPER round-trip', () => {
     const { encryptedFrame, mac } = encryptSecureWrapper({ ...ctx, plainFrame });
     const corruptedMac = Buffer.from(mac);
     corruptedMac[0] = corruptedMac[0]! ^ 0x01;
-    assert.throws(() =>
-      decryptSecureWrapper({ ...ctx, encryptedFrame, mac: corruptedMac }),
-    );
+    assert.throws(() => decryptSecureWrapper({ ...ctx, encryptedFrame, mac: corruptedMac }));
   });
 
   it('rejects a tampered encrypted payload', () => {
@@ -223,9 +261,7 @@ describe('encrypt / decrypt SECURE_WRAPPER round-trip', () => {
     const { encryptedFrame, mac } = encryptSecureWrapper({ ...ctx, plainFrame });
     const corrupted = Buffer.from(encryptedFrame);
     corrupted[0] = corrupted[0]! ^ 0x01;
-    assert.throws(() =>
-      decryptSecureWrapper({ ...ctx, encryptedFrame: corrupted, mac }),
-    );
+    assert.throws(() => decryptSecureWrapper({ ...ctx, encryptedFrame: corrupted, mac }));
   });
 
   it('rejects when the receiver believes a different session/sequence', () => {
@@ -237,12 +273,8 @@ describe('encrypt / decrypt SECURE_WRAPPER round-trip', () => {
       messageTag: 1,
     };
     const { encryptedFrame, mac } = encryptSecureWrapper({ ...ctx, plainFrame });
-    assert.throws(() =>
-      decryptSecureWrapper({ ...ctx, sessionId: 2, encryptedFrame, mac }),
-    );
-    assert.throws(() =>
-      decryptSecureWrapper({ ...ctx, sequenceId: 2, encryptedFrame, mac }),
-    );
+    assert.throws(() => decryptSecureWrapper({ ...ctx, sessionId: 2, encryptedFrame, mac }));
+    assert.throws(() => decryptSecureWrapper({ ...ctx, sequenceId: 2, encryptedFrame, mac }));
   });
 });
 

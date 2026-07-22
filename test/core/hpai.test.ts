@@ -8,10 +8,16 @@ describe('HPAI', () => {
   it('serializes a UDP endpoint', () => {
     const h = new HPAI('192.168.1.10', 3671, HostProtocol.IPV4_UDP);
     const buf = h.toKnx();
-    assert.deepEqual(
-      Array.from(buf),
-      [0x08, 0x01, 192, 168, 1, 10, (3671 >> 8) & 0xff, 3671 & 0xff],
-    );
+    assert.deepEqual(Array.from(buf), [
+      0x08,
+      0x01,
+      192,
+      168,
+      1,
+      10,
+      (3671 >> 8) & 0xff,
+      3671 & 0xff,
+    ]);
   });
 
   it('round-trips through bytes', () => {

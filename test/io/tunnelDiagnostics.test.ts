@@ -1,11 +1,15 @@
 import { strict as assert } from 'node:assert';
 import { describe, it } from 'node:test';
-import { groupValueWrite, smallValue } from '../../src/core/apci';
-import {
-  TunnellingRequest,
-} from '../../src/core/bodies';
-import { CEMIFlags, CEMIFrame, CEMILData, CEMIMessageCode, DEFAULT_OUTGOING_FLAGS } from '../../src/core/cemi';
 import { GroupAddress, IndividualAddress } from '../../src/core/address';
+import { groupValueWrite, smallValue } from '../../src/core/apci';
+import { TunnellingRequest } from '../../src/core/bodies';
+import {
+  CEMIFlags,
+  CEMIFrame,
+  CEMILData,
+  CEMIMessageCode,
+  DEFAULT_OUTGOING_FLAGS,
+} from '../../src/core/cemi';
 import { KNXIPFrame } from '../../src/core/knxipFrame';
 import { tDataGroup } from '../../src/core/tpci';
 import { TunnelClient } from '../../src/io/tunnel';
@@ -29,10 +33,7 @@ function incomingFrame(channelId: number, seq: number): KNXIPFrame {
   const cemi = new CEMIFrame({
     code: CEMIMessageCode.L_DATA_IND,
     data: new CEMILData({
-      flags:
-        DEFAULT_OUTGOING_FLAGS |
-        CEMIFlags.DESTINATION_GROUP_ADDRESS |
-        CEMIFlags.PRIORITY_LOW,
+      flags: DEFAULT_OUTGOING_FLAGS | CEMIFlags.DESTINATION_GROUP_ADDRESS | CEMIFlags.PRIORITY_LOW,
       srcAddr: new IndividualAddress('1.1.5'),
       dstAddr: new GroupAddress('1/2/3'),
       tpci: tDataGroup(),

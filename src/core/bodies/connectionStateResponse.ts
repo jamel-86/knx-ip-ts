@@ -23,10 +23,7 @@ export class ConnectionStateResponse {
     return 2;
   }
 
-  static fromKnx(
-    raw: Buffer,
-    offset = 0,
-  ): { body: ConnectionStateResponse; bytesRead: number } {
+  static fromKnx(raw: Buffer, offset = 0): { body: ConnectionStateResponse; bytesRead: number } {
     if (raw.length - offset < 2) {
       throw new CouldNotParseKNXIP('CONNECTIONSTATE_RESPONSE too short');
     }

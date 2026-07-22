@@ -1,6 +1,6 @@
 // Parser for ETS6 .knxproj project archives.
 //
-// Author: Jamel Nacef <jamel.nacef@eelectron.com>
+// Author: Jamel Nacef <jamelnacef@icloud.com>
 // SPDX-License-Identifier: Apache-2.0
 //
 // A .knxproj is a ZIP archive containing one or more XML files. The project
@@ -27,11 +27,7 @@
 import * as crypto from 'node:crypto';
 import AdmZip from 'adm-zip';
 import { XMLParser } from 'fast-xml-parser';
-import {
-  InnerZipBadPassword,
-  InnerZipUnsupportedEncryption,
-  extractInnerZip,
-} from './winzipAes';
+import { InnerZipBadPassword, InnerZipUnsupportedEncryption, extractInnerZip } from './winzipAes';
 
 /**
  * ETS6 derives the actual PKZip-AES password by running the user-typed
@@ -175,17 +171,12 @@ export interface ParseKnxprojOptions {
 }
 
 /** Parse a .knxproj archive (provided as a Buffer). */
-export function parseKnxproj(
-  buffer: Buffer,
-  opts: ParseKnxprojOptions = {},
-): KnxprojParseResult {
+export function parseKnxproj(buffer: Buffer, opts: ParseKnxprojOptions = {}): KnxprojParseResult {
   let zip: AdmZip;
   try {
     zip = new AdmZip(buffer);
   } catch (err) {
-    throw new Error(
-      `Could not open .knxproj as a ZIP archive: ${(err as Error).message}`,
-    );
+    throw new Error(`Could not open .knxproj as a ZIP archive: ${(err as Error).message}`);
   }
 
   const entries = zip.getEntries();
@@ -263,9 +254,7 @@ export function parseKnxproj(
             throw new KnxprojBadPassword();
           }
         } else if (err instanceof InnerZipUnsupportedEncryption) {
-          warnings.push(
-            `Skipped nested archive ${entry.entryName}: ${(err as Error).message}`,
-          );
+          warnings.push(`Skipped nested archive ${entry.entryName}: ${(err as Error).message}`);
         } else {
           warnings.push(
             `Could not open nested archive ${entry.entryName}: ${(err as Error).message}`,
@@ -388,9 +377,7 @@ function collectDevicesOnLine(line: unknown): unknown[] {
   const segments = ensureArray(rec.Segment);
   const fromSegments: unknown[] = [];
   for (const seg of segments) {
-    fromSegments.push(
-      ...ensureArray((seg as Record<string, unknown>).DeviceInstance),
-    );
+    fromSegments.push(...ensureArray((seg as Record<string, unknown>).DeviceInstance));
   }
   return [...direct, ...fromSegments];
 }
@@ -511,10 +498,7 @@ function parseGroupAddressElement(obj: unknown): KnxprojGroupAddress | null {
   const rec = obj as Record<string, unknown>;
   const addrAttr = rec['@_Address'];
   if (addrAttr === undefined) return null;
-  const raw =
-    typeof addrAttr === 'number'
-      ? addrAttr
-      : Number.parseInt(String(addrAttr), 10);
+  const raw = typeof addrAttr === 'number' ? addrAttr : Number.parseInt(String(addrAttr), 10);
   if (!Number.isInteger(raw) || raw < 0 || raw > 0xffff) return null;
 
   const main = (raw >> 11) & 0x1f;
@@ -526,8 +510,7 @@ function parseGroupAddressElement(obj: unknown): KnxprojGroupAddress | null {
     ga: `${main}/${middle}/${sub}`,
     raw,
     name: typeof rec['@_Name'] === 'string' ? (rec['@_Name'] as string) : '',
-    description:
-      typeof rec['@_Description'] === 'string' ? (rec['@_Description'] as string) : '',
+    description: typeof rec['@_Description'] === 'string' ? (rec['@_Description'] as string) : '',
     dpt: typeof dptAttr === 'string' && dptAttr ? dptAttr : null,
   };
 }

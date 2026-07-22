@@ -1,6 +1,6 @@
 // Tiny zero-dependency cron expression matcher.
 //
-// Author: Jamel Nacef <jamel.nacef@eelectron.com>
+// Author: Jamel Nacef <jamelnacef@icloud.com>
 // SPDX-License-Identifier: Apache-2.0
 //
 // Supports a 5-field expression: minute hour day-of-month month day-of-week.
@@ -39,12 +39,7 @@ const RANGES: Array<{ name: string; min: number; max: number }> = [
   { name: 'dow', min: 0, max: 6 },
 ];
 
-function expandPiece(
-  piece: string,
-  min: number,
-  max: number,
-  fieldName: string,
-): number[] {
+function expandPiece(piece: string, min: number, max: number, fieldName: string): number[] {
   // "*/N" → step over the whole range; "A/N" or "A-B/N" → step within a range.
   let stepNum = 1;
   let body = piece;

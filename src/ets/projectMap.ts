@@ -4,11 +4,7 @@
 import { GroupAddress } from '../core/address';
 import { parseEtsCsv } from './csvParser';
 import { normalizeDptId } from './dptNormalize';
-import {
-  type KnxprojGroupAddress,
-  type ParseKnxprojOptions,
-  parseKnxproj,
-} from './knxproj';
+import { type KnxprojGroupAddress, type ParseKnxprojOptions, parseKnxproj } from './knxproj';
 
 export interface ETSEntry {
   /** Original GA string, e.g. "1/2/3". */

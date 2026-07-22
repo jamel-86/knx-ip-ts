@@ -84,9 +84,7 @@ describe('aesCcmEncrypt / aesCcmDecrypt (round-trip)', () => {
     const corruptedTag = Buffer.from(tag);
     corruptedTag[0] = corruptedTag[0]! ^ 0x01;
 
-    assert.throws(() =>
-      aesCcmDecrypt({ key, nonce, aad, ciphertext, tag: corruptedTag }),
-    );
+    assert.throws(() => aesCcmDecrypt({ key, nonce, aad, ciphertext, tag: corruptedTag }));
   });
 
   it('rejects modified ciphertext', () => {
@@ -99,26 +97,16 @@ describe('aesCcmEncrypt / aesCcmDecrypt (round-trip)', () => {
     const corrupted = Buffer.from(ciphertext);
     corrupted[0] = corrupted[0]! ^ 0x01;
 
-    assert.throws(() =>
-      aesCcmDecrypt({ key, nonce, aad, ciphertext: corrupted, tag }),
-    );
+    assert.throws(() => aesCcmDecrypt({ key, nonce, aad, ciphertext: corrupted, tag }));
   });
 });
 
 describe('x25519SharedSecret (RFC 7748 §6.1)', () => {
   // Test vectors from RFC 7748 §6.1
-  const alicePriv = hex(
-    '77076d0a 7318a57d 3c16c172 51b26645 df4c2f87 ebc0992a b177fba5 1db92c2a',
-  );
-  const alicePub = hex(
-    '8520f009 8930a754 748b7ddc b43ef75a 0dbf3a0d 26381af4 eba4a98e aa9b4e6a',
-  );
-  const bobPriv = hex(
-    '5dab087e 624a8a4b 79e17f8b 83800ee6 6f3bb129 2618b6fd 1c2f8b27 ff88e0eb',
-  );
-  const bobPub = hex(
-    'de9edb7d 7b7dc1b4 d35b61c2 ece43537 3f8343c8 5b78674d adfc7e14 6f882b4f',
-  );
+  const alicePriv = hex('77076d0a 7318a57d 3c16c172 51b26645 df4c2f87 ebc0992a b177fba5 1db92c2a');
+  const alicePub = hex('8520f009 8930a754 748b7ddc b43ef75a 0dbf3a0d 26381af4 eba4a98e aa9b4e6a');
+  const bobPriv = hex('5dab087e 624a8a4b 79e17f8b 83800ee6 6f3bb129 2618b6fd 1c2f8b27 ff88e0eb');
+  const bobPub = hex('de9edb7d 7b7dc1b4 d35b61c2 ece43537 3f8343c8 5b78674d adfc7e14 6f882b4f');
   const sharedSecret = hex(
     '4a5d9d5b a4ce2de1 728e3bf4 80350f25 e07e21c9 47d19e33 76f09b3c 1e161742',
   );

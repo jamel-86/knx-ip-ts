@@ -82,10 +82,7 @@ describe('SessionRequest', () => {
   });
 
   it('rejects wrong-size public key', () => {
-    assert.throws(
-      () => new SessionRequest({ publicKey: Buffer.alloc(31) }),
-      RangeError,
-    );
+    assert.throws(() => new SessionRequest({ publicKey: Buffer.alloc(31) }), RangeError);
   });
 });
 
@@ -121,14 +118,8 @@ describe('SessionAuthenticate', () => {
   });
 
   it('rejects out-of-range user IDs', () => {
-    assert.throws(
-      () => new SessionAuthenticate({ userId: 0, mac: macFill(0) }),
-      RangeError,
-    );
-    assert.throws(
-      () => new SessionAuthenticate({ userId: 128, mac: macFill(0) }),
-      RangeError,
-    );
+    assert.throws(() => new SessionAuthenticate({ userId: 0, mac: macFill(0) }), RangeError);
+    assert.throws(() => new SessionAuthenticate({ userId: 128, mac: macFill(0) }), RangeError);
   });
 });
 

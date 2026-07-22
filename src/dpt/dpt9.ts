@@ -38,9 +38,7 @@ function decode2ByteFloat(apdu: APDUValue, id: string, min: number, max: number)
   if (sign === 1) significand -= 2048;
   const value = (significand << exponent) / 100;
   if (value < min || value > max) {
-    throw new ConversionError(
-      `DPT ${id}: decoded value ${value} out of range (${min}..${max})`,
-    );
+    throw new ConversionError(`DPT ${id}: decoded value ${value} out of range (${min}..${max})`);
   }
   return value;
 }

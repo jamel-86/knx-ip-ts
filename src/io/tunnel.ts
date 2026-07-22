@@ -11,11 +11,8 @@
 
 import { EventEmitter } from 'node:events';
 import { IndividualAddress, type IndividualAddressInput } from '../core/address';
-import {
-  type APDUValue,
-  groupValueRead,
-  groupValueWrite,
-} from '../core/apci';
+import { GroupAddress, type GroupAddressInput } from '../core/address';
+import { type APDUValue, groupValueRead, groupValueWrite } from '../core/apci';
 import {
   ConnectRequest,
   ConnectResponse,
@@ -26,17 +23,22 @@ import {
   TunnellingAck,
   TunnellingRequest,
 } from '../core/bodies';
-import { CEMIFrame, CEMILData, CEMIFlags, CEMIMessageCode, DEFAULT_OUTGOING_FLAGS } from '../core/cemi';
+import {
+  CEMIFlags,
+  CEMIFrame,
+  CEMILData,
+  CEMIMessageCode,
+  DEFAULT_OUTGOING_FLAGS,
+} from '../core/cemi';
 import { CRI } from '../core/cri';
-import { GroupAddress, type GroupAddressInput } from '../core/address';
 import { HPAI } from '../core/hpai';
 import { KNXIPFrame } from '../core/knxipFrame';
 import { ConnectionType, ErrorCode, HostProtocol, errorCodeName } from '../core/serviceTypes';
 import { defaultTpci } from '../core/telegram';
 import {
   AUTO_RECONNECT_WAIT_MS,
-  CONNECT_REQUEST_TIMEOUT_MS,
   CONNECTIONSTATE_REQUEST_TIMEOUT_MS,
+  CONNECT_REQUEST_TIMEOUT_MS,
   HEARTBEAT_MAX_FAILURES,
   HEARTBEAT_RATE_MS,
   KNX_PORT,
@@ -193,11 +195,7 @@ export class TunnelClient extends EventEmitter {
   private readonly _opts: Required<
     Pick<
       TunnelClientOptions,
-      | 'gatewayIp'
-      | 'gatewayPort'
-      | 'autoReconnect'
-      | 'autoReconnectWaitMs'
-      | 'heartbeatIntervalMs'
+      'gatewayIp' | 'gatewayPort' | 'autoReconnect' | 'autoReconnectWaitMs' | 'heartbeatIntervalMs'
     >
   > &
     TunnelClientOptions;
@@ -307,8 +305,7 @@ export class TunnelClient extends EventEmitter {
         this._state === 'connected' && this._stats.connectedAtTs
           ? now - this._stats.connectedAtTs
           : 0,
-      sinceLastFrameMs:
-        this._stats.lastFrameTs !== null ? now - this._stats.lastFrameTs : null,
+      sinceLastFrameMs: this._stats.lastFrameTs !== null ? now - this._stats.lastFrameTs : null,
     };
   }
 
@@ -393,9 +390,7 @@ export class TunnelClient extends EventEmitter {
         }
       }
       if (this._state !== 'connected') {
-        throw new CommunicationError(
-          `Cannot sendCemi in state '${this._state}'`,
-        );
+        throw new CommunicationError(`Cannot sendCemi in state '${this._state}'`);
       }
       const rawCemi = cemi.toKnx();
       try {
@@ -447,9 +442,7 @@ export class TunnelClient extends EventEmitter {
       code: CEMIMessageCode.L_DATA_REQ,
       data: new CEMILData({
         flags:
-          DEFAULT_OUTGOING_FLAGS |
-          CEMIFlags.DESTINATION_GROUP_ADDRESS |
-          CEMIFlags.PRIORITY_LOW,
+          DEFAULT_OUTGOING_FLAGS | CEMIFlags.DESTINATION_GROUP_ADDRESS | CEMIFlags.PRIORITY_LOW,
         srcAddr: this._assignedAddress ?? new IndividualAddress(0),
         dstAddr: dst,
         tpci: defaultTpci(dst),
@@ -466,9 +459,7 @@ export class TunnelClient extends EventEmitter {
       code: CEMIMessageCode.L_DATA_REQ,
       data: new CEMILData({
         flags:
-          DEFAULT_OUTGOING_FLAGS |
-          CEMIFlags.DESTINATION_GROUP_ADDRESS |
-          CEMIFlags.PRIORITY_LOW,
+          DEFAULT_OUTGOING_FLAGS | CEMIFlags.DESTINATION_GROUP_ADDRESS | CEMIFlags.PRIORITY_LOW,
         srcAddr: this._assignedAddress ?? new IndividualAddress(0),
         dstAddr: dst,
         tpci: defaultTpci(dst),
@@ -539,9 +530,7 @@ export class TunnelClient extends EventEmitter {
     const response = await responsePromise;
 
     if (response.statusCode !== ErrorCode.E_NO_ERROR) {
-      throw new CommunicationError(
-        `CONNECT_RESPONSE error: ${errorCodeName(response.statusCode)}`,
-      );
+      throw new CommunicationError(`CONNECT_RESPONSE error: ${errorCodeName(response.statusCode)}`);
     }
     this._channelId = response.communicationChannelId;
     this._assignedAddress = response.crd.individualAddress ?? null;
@@ -679,11 +668,7 @@ export class TunnelClient extends EventEmitter {
     this._pendingAck = null;
     clearTimeout(pa.timer);
     if (ack.statusCode !== ErrorCode.E_NO_ERROR) {
-      pa.reject(
-        new TunnellingAckError(
-          `TUNNELLING_ACK error ${errorCodeName(ack.statusCode)}`,
-        ),
-      );
+      pa.reject(new TunnellingAckError(`TUNNELLING_ACK error ${errorCodeName(ack.statusCode)}`));
       return;
     }
     pa.resolve();
@@ -766,7 +751,11 @@ export class TunnelClient extends EventEmitter {
   private _handleInboundDisconnect(req: DisconnectRequest): void {
     // Only acknowledge if the channel matches ours; otherwise the request is
     // for a different tunnel sharing the gateway and we ignore it.
-    if (this._transport && this._channelId !== null && req.communicationChannelId === this._channelId) {
+    if (
+      this._transport &&
+      this._channelId !== null &&
+      req.communicationChannelId === this._channelId
+    ) {
       const resp = new DisconnectResponse({ communicationChannelId: this._channelId });
       this._transport.send(KNXIPFrame.fromBody(resp)).catch((err) => {
         this._logger.warn('Failed to send DISCONNECT_RESPONSE', err);
@@ -784,20 +773,14 @@ export class TunnelClient extends EventEmitter {
 
   private _awaitResponse<T>(serviceType: number, timeoutMs: number): Promise<T> {
     if (this._pendingResponse) {
-      return Promise.reject(
-        new CommunicationError('Another KNX/IP response is already pending'),
-      );
+      return Promise.reject(new CommunicationError('Another KNX/IP response is already pending'));
     }
     return new Promise<T>((resolve, reject) => {
       const timer = setTimeout(() => {
         if (this._pendingResponse?.timer === timer) {
           this._pendingResponse = null;
         }
-        reject(
-          new CommunicationError(
-            `Timeout waiting for service 0x${serviceType.toString(16)}`,
-          ),
-        );
+        reject(new CommunicationError(`Timeout waiting for service 0x${serviceType.toString(16)}`));
       }, timeoutMs);
       this._pendingResponse = {
         expectedServiceType: serviceType,
@@ -810,16 +793,16 @@ export class TunnelClient extends EventEmitter {
 
   private _awaitAck(sequence: number, timeoutMs: number): Promise<void> {
     if (this._pendingAck) {
-      return Promise.reject(
-        new CommunicationError('A TUNNELLING_ACK is already pending'),
-      );
+      return Promise.reject(new CommunicationError('A TUNNELLING_ACK is already pending'));
     }
     return new Promise<void>((resolve, reject) => {
       const timer = setTimeout(() => {
         if (this._pendingAck?.timer === timer) {
           this._pendingAck = null;
         }
-        reject(new TunnellingAckError(`No TUNNELLING_ACK for seq ${sequence} within ${timeoutMs}ms`));
+        reject(
+          new TunnellingAckError(`No TUNNELLING_ACK for seq ${sequence} within ${timeoutMs}ms`),
+        );
       }, timeoutMs);
       this._pendingAck = { sequence, resolve, reject, timer };
     });
@@ -870,9 +853,7 @@ export class TunnelClient extends EventEmitter {
           this._stats.lastHeartbeatOkTs = Date.now();
           return;
         }
-        lastErr = new CommunicationError(
-          `Heartbeat status ${errorCodeName(resp.statusCode)}`,
-        );
+        lastErr = new CommunicationError(`Heartbeat status ${errorCodeName(resp.statusCode)}`);
       } catch (err) {
         lastErr = err as Error;
       }
@@ -891,9 +872,7 @@ export class TunnelClient extends EventEmitter {
     this._invalidSeqTimer = setTimeout(() => {
       this._invalidSeqTimer = null;
       this._onTunnelLost(
-        new CommunicationError(
-          'Out-of-order TUNNELLING_REQUEST not recovered within 2s',
-        ),
+        new CommunicationError('Out-of-order TUNNELLING_REQUEST not recovered within 2s'),
       );
     }, 2 * TUNNELLING_REQUEST_TIMEOUT_MS);
   }
@@ -946,18 +925,18 @@ export class TunnelClient extends EventEmitter {
           await this.connect();
           return;
         } catch (err) {
-          this._logger.debug(
-            `Reconnect attempt ${attempt} failed: ${(err as Error).message}`,
-          );
+          this._logger.debug(`Reconnect attempt ${attempt} failed: ${(err as Error).message}`);
           attempt += 1;
           await delayUnref(this._opts.autoReconnectWaitMs);
         }
       }
     })();
     // Detach so unhandled rejection isn't possible — caller awaits via getter only when meaningful
-    this._reconnectPromise.catch(() => undefined).finally(() => {
-      this._reconnectPromise = null;
-    });
+    this._reconnectPromise
+      .catch(() => undefined)
+      .finally(() => {
+        this._reconnectPromise = null;
+      });
   }
 
   // ---------- state ----------

@@ -31,9 +31,7 @@ export function compileGAPattern(
 
   const parts = pattern.split('/');
   if (parts.length !== 3) {
-    throw new Error(
-      `GA wildcard pattern must have 3 segments (main/middle/sub): "${pattern}"`,
-    );
+    throw new Error(`GA wildcard pattern must have 3 segments (main/middle/sub): "${pattern}"`);
   }
 
   const expected: (number | null)[] = parts.map((part, idx) => {

@@ -42,8 +42,7 @@ export class UnsupportedKNXIPService extends Error {
     message?: string,
   ) {
     super(
-      message ??
-        `Unsupported KNX/IP service type 0x${serviceType.toString(16).padStart(4, '0')}`,
+      message ?? `Unsupported KNX/IP service type 0x${serviceType.toString(16).padStart(4, '0')}`,
     );
     this.name = 'UnsupportedKNXIPService';
   }

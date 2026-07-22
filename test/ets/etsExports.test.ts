@@ -3,10 +3,12 @@ import { existsSync, readFileSync } from 'node:fs';
 import { describe, it } from 'node:test';
 import { ETSProjectMap } from '../../src/ets/projectMap';
 
+// Optional integration samples: drop the three GA exports into ./fixtures/
+// (gitignored) to exercise the real-CSV path. Tests skip when absent.
 const SAMPLES = [
-  '/home/innovera/projects/software/eelectron-knxip/ga-example comma.csv',
-  '/home/innovera/projects/software/eelectron-knxip/ga-example semicolon.csv',
-  '/home/innovera/projects/software/eelectron-knxip/ga-example tabular.csv',
+  './fixtures/ga-example comma.csv',
+  './fixtures/ga-example semicolon.csv',
+  './fixtures/ga-example tabular.csv',
 ] as const;
 
 const HAVE_SAMPLES = SAMPLES.every((p) => existsSync(p));
@@ -21,16 +23,9 @@ describe('parseEtsCsv against real ETS exports', () => {
       assert.ok(result.entries > 50, `expected > 50 entries, got ${result.entries}`);
       // No warnings about pseudo-GAs ("1/-/-", "1/0/-")
       const pseudoWarn = result.warnings.find((w) => /\d\/-\/-|\d\/\d+\/-/.test(w));
-      assert.equal(
-        pseudoWarn,
-        undefined,
-        `unexpected warning about pseudo-GA: ${pseudoWarn}`,
-      );
+      assert.equal(pseudoWarn, undefined, `unexpected warning about pseudo-GA: ${pseudoWarn}`);
       // Most/all DPTs are recognized (DPST-1-* / DPST-5-*)
-      assert.ok(
-        result.withDpt > 0,
-        `expected some entries with known DPT, got ${result.withDpt}`,
-      );
+      assert.ok(result.withDpt > 0, `expected some entries with known DPT, got ${result.withDpt}`);
       // Picked names from the Sub column
       const example = map.list().find((e) => e.ga === '1/0/1');
       assert.ok(example, 'expected GA 1/0/1 to be present');

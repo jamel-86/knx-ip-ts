@@ -19,9 +19,7 @@ function makeInt16(id: string, name: string, unit?: string): DPTCodec<number> {
     decode: (apdu) => readInt16(apdu, id),
     encode(value: number): APDUValue {
       if (!Number.isInteger(value) || value < -0x8000 || value > 0x7fff) {
-        throw new ConversionError(
-          `DPT ${id}: value must be integer -32768..32767, got ${value}`,
-        );
+        throw new ConversionError(`DPT ${id}: value must be integer -32768..32767, got ${value}`);
       }
       const buf = Buffer.alloc(2);
       buf.writeInt16BE(value, 0);

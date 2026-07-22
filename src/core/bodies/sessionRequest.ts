@@ -28,8 +28,7 @@ export class SessionRequest {
     // SESSION_REQUEST is only sent over TCP (KNX/IP Secure §2.5.4), so the
     // HPAI must declare the TCP host protocol — many gateways silently drop
     // a SESSION_REQUEST whose HPAI says UDP.
-    this.controlEndpoint =
-      init.controlEndpoint ?? HPAI.routeBack(HostProtocol.IPV4_TCP);
+    this.controlEndpoint = init.controlEndpoint ?? HPAI.routeBack(HostProtocol.IPV4_TCP);
     this.publicKey = init.publicKey;
   }
 

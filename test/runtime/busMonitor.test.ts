@@ -1,10 +1,6 @@
 import { strict as assert } from 'node:assert';
 import { describe, it } from 'node:test';
-import {
-  BusMonitor,
-  DEFAULT_BUFFER_SIZE,
-  type TelegramRecord,
-} from '../../src/runtime/busMonitor';
+import { BusMonitor, DEFAULT_BUFFER_SIZE, type TelegramRecord } from '../../src/runtime/busMonitor';
 
 function rec(overrides: Partial<TelegramRecord> = {}): TelegramRecord {
   return {

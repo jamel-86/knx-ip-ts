@@ -1,6 +1,6 @@
 // Crypto primitives for KNX/IP Secure.
 //
-// Author: Jamel Nacef <jamel.nacef@eelectron.com>
+// Author: Jamel Nacef <jamelnacef@icloud.com>
 // SPDX-License-Identifier: Apache-2.0
 //
 // All algorithms are implemented strictly from public specifications:
@@ -304,4 +304,16 @@ export function bytesXor(a: Buffer, b: Buffer): Buffer {
   const out = Buffer.alloc(a.length);
   for (let i = 0; i < a.length; i++) out[i] = a[i]! ^ b[i]!;
   return out;
+}
+
+/**
+ * Constant-time equality for fixed-width secrets (auth tags, MACs). Returns true
+ * iff `a` and `b` are equal length AND bytewise equal. Length mismatches return
+ * false (never throw) so a caller's drop-on-mismatch path stays boolean —
+ * Node's crypto.timingSafeEqual throws on length mismatch, which would turn a
+ * malformed/different-length tag into an exception.
+ */
+export function constantTimeEquals(a: Buffer, b: Buffer): boolean {
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
 }

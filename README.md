@@ -22,7 +22,7 @@ frame and crypto primitives or just call the high-level client).
 | **ETS `.knxproj`** parsing — including password-protected projects | ✅ |
 | KNX/IP **routing** (multicast) | — |
 | **KNX Data Secure** (group/p2p telegram decryption) | ✅ |
-| **TP / FT1.2** serial transceiver | — |
+| **TP serial transceiver** (hardware in progress) | — |
 
 Focused on purpose: a correct, auditable KNX/IP client + project parser. No
 half-implemented surfaces.

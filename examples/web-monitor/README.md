@@ -1,4 +1,4 @@
-# web-monitor — example React + Node app using `knx-ts-driver`
+# web-monitor — example React + Node app using `knx-toolkit`
 
 A small reference app that demonstrates the library end-to-end:
 

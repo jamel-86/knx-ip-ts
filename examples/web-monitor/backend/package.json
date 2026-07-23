@@ -1,5 +1,5 @@
 {
-  "name": "knx-ts-driver-web-monitor-backend",
+  "name": "knx-toolkit-web-monitor-backend",
   "version": "0.0.0",
   "private": true,
   "scripts": {

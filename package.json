@@ -1,5 +1,5 @@
 {
-  "name": "knx-ts-driver",
+  "name": "knx-toolkit",
   "version": "0.1.0",
   "description": "Pure-TypeScript KNX/IP client library — UDP tunnelling, KNX IP Secure over TCP, gateway discovery, DPT codecs, and ETS .knxproj parsing.",
   "author": "Jamel Nacef <jamelnacef@icloud.com>",

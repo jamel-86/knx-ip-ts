@@ -1,4 +1,4 @@
-// Public API for knx-ts-driver.
+// Public API for knx-toolkit.
 //
 // A pure-TypeScript KNX/IP client library: UDP tunnelling, KNX IP Secure
 // tunnelling over TCP, gateway discovery, DPT codecs, and ETS .knxproj parsing.

@@ -10,4 +10,4 @@ coverage/
 *.knxkeys
 *.pcap
 *.pcapng
-.claude/*
+.claude/*test/_an_kat.ts

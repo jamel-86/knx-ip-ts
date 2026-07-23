@@ -17,6 +17,9 @@ import { DisconnectRequest } from './bodies/disconnectRequest';
 import { DisconnectResponse } from './bodies/disconnectResponse';
 import { SearchRequest } from './bodies/searchRequest';
 import { SearchResponse } from './bodies/searchResponse';
+import { RoutingIndication } from './bodies/routingIndication';
+import { RoutingLostMessage } from './bodies/routingLostMessage';
+import { RoutingBusy } from './bodies/routingBusy';
 import { SecureWrapper } from './bodies/secureWrapper';
 import { SessionAuthenticate } from './bodies/sessionAuthenticate';
 import { SessionRequest } from './bodies/sessionRequest';
@@ -52,8 +55,8 @@ export class KNXIPFrame {
 
   /**
    * Parse a complete frame. Throws {@link UnsupportedKNXIPService} for service
-   * types we don't implement (DESCRIPTION_*, ROUTING_*, SECURE_*, etc.) so the
-   * transport can log-and-drop without treating them as parse errors.
+   * types we don't implement (DESCRIPTION_*, SECURE_*, etc.) so the transport
+   * can log-and-drop without treating them as parse errors.
    */
   static fromKnx(data: Buffer): { frame: KNXIPFrame; bytesRead: number } {
     const { header, bytesRead: headerBytes } = KNXIPHeader.fromKnx(data);
@@ -99,6 +102,12 @@ function parseBody(
       return SearchRequest.fromKnx(data, offset);
     case ServiceType.SEARCH_RESPONSE:
       return SearchResponse.fromKnx(data, offset);
+    case ServiceType.ROUTING_INDICATION:
+      return RoutingIndication.fromKnx(data, offset);
+    case ServiceType.ROUTING_LOST_MESSAGE:
+      return RoutingLostMessage.fromKnx(data, offset);
+    case ServiceType.ROUTING_BUSY:
+      return RoutingBusy.fromKnx(data, offset);
     case ServiceType.SECURE_WRAPPER:
       return SecureWrapper.fromKnx(data, offset);
     case ServiceType.SESSION_REQUEST:

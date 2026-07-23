@@ -30,7 +30,17 @@ export {
 } from './io/discovery';
 
 // ---------------------------------------------------------------------------
-// Transports (advanced — most users go through TunnelClient)
+// Routing client (multicast backbone)
+// ---------------------------------------------------------------------------
+export {
+  RoutingClient,
+  type RoutingClientOptions,
+  type RoutingClientState,
+  type RoutingLogger,
+} from './io/routingClient';
+
+// ---------------------------------------------------------------------------
+// Transports (advanced — most users go through TunnelClient / RoutingClient)
 // ---------------------------------------------------------------------------
 export type { Transport } from './io/transport';
 export {
@@ -39,6 +49,10 @@ export {
   type UdpTransportOptions,
   type UdpTransportEvents,
 } from './io/udpTransport';
+export {
+  MulticastTransport,
+  type MulticastTransportOptions,
+} from './io/multicastTransport';
 export {
   TcpTransport,
   type TcpTransportOptions,

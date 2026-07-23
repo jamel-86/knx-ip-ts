@@ -1,7 +1,8 @@
 // DPT 235.001 — Active electrical energy + tariff. 6 bytes:
 //   [0..3] active energy (signed 32-bit) — Wh
 //   [4]    tariff (uint8, 0..254)
-//   [5]    bit1 = tariff valid, bit0 = energy valid
+//   [5]    validity bitset (03_07_02 §3.48): bit0 = Tariff, bit1 = ActiveElectricalEnergy;
+//          for each, 0 = valid, 1 = NOT valid
 //
 // Tariff metering devices broadcast this when reporting consumption per band.
 
@@ -33,8 +34,8 @@ const codec: DPTCodec<DPT235Value> = {
     return {
       energy,
       tariff,
-      energyValid: (validity & 0x01) !== 0,
-      tariffValid: (validity & 0x02) !== 0,
+      energyValid: (validity & 0x02) === 0, // b1 = E; 0 = valid, 1 = not valid
+      tariffValid: (validity & 0x01) === 0, // b0 = T; 0 = valid, 1 = not valid
     };
   },
   encode(v: DPT235Value): APDUValue {
@@ -44,9 +45,10 @@ const codec: DPTCodec<DPT235Value> = {
     if (!Number.isInteger(v.tariff) || v.tariff < 0 || v.tariff > 254) {
       throw new ConversionError(`DPT 235.001: tariff out of range (0..254): ${v.tariff}`);
     }
+    // Spec: bit set = "not valid". Default (undefined) = valid = bit clear.
     let validity = 0;
-    if (v.energyValid !== false) validity |= 0x01;
-    if (v.tariffValid !== false) validity |= 0x02;
+    if (v.energyValid === false) validity |= 0x02; // b1 = E
+    if (v.tariffValid === false) validity |= 0x01; // b0 = T
     const buf = Buffer.alloc(6);
     buf.writeInt32BE(v.energy, 0);
     buf[4] = v.tariff;

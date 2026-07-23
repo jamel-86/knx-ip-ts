@@ -8,6 +8,9 @@ export { DisconnectRequest } from './disconnectRequest';
 export { DisconnectResponse } from './disconnectResponse';
 export { SearchRequest } from './searchRequest';
 export { SearchResponse } from './searchResponse';
+export { RoutingIndication } from './routingIndication';
+export { RoutingLostMessage } from './routingLostMessage';
+export { RoutingBusy } from './routingBusy';
 export { SecureWrapper } from './secureWrapper';
 export { SessionAuthenticate } from './sessionAuthenticate';
 export { SessionRequest } from './sessionRequest';
@@ -25,6 +28,9 @@ import type { DisconnectRequest } from './disconnectRequest';
 import type { DisconnectResponse } from './disconnectResponse';
 import type { SearchRequest } from './searchRequest';
 import type { SearchResponse } from './searchResponse';
+import type { RoutingIndication } from './routingIndication';
+import type { RoutingLostMessage } from './routingLostMessage';
+import type { RoutingBusy } from './routingBusy';
 import type { SecureWrapper } from './secureWrapper';
 import type { SessionAuthenticate } from './sessionAuthenticate';
 import type { SessionRequest } from './sessionRequest';
@@ -43,6 +49,9 @@ export type KNXIPBody =
   | DisconnectResponse
   | SearchRequest
   | SearchResponse
+  | RoutingIndication
+  | RoutingLostMessage
+  | RoutingBusy
   | SecureWrapper
   | SessionAuthenticate
   | SessionRequest

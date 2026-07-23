@@ -5,9 +5,11 @@
 //   [3] day-of-week (high 3 bits, 0=any, 1=Mon..7=Sun) | hour (low 5 bits, 0..23 or 24=any)
 //   [4] minutes (low 6 bits, 0..59)
 //   [5] seconds (low 6 bits, 0..59)
-//   [6] flags: bit7 fault, bit6 working_day, bit5 nwd valid, bit4 no_year,
+//   [6] flags (03_07_02 §3.20): bit7 fault, bit6 working_day,
+//              bit5 NWD (1 = working-day field NOT valid), bit4 no_year,
 //              bit3 no_date, bit2 no_dow, bit1 no_time, bit0 summer_time
-//   [7] bit7 quality (1 = unsynchronised), lower bits reserved
+//   [7] bit7 CLQ clock quality (1 = external sync signal present => synchronised),
+//       lower bits reserved
 
 import type { APDUValue } from '../core/apci';
 import { ConversionError } from '../core/errors';
@@ -76,10 +78,11 @@ const codec: DPTCodec<DPT19Value> = {
       seconds,
       dayOfWeek: DAY_NAMES[dow] ?? 'any',
       fault: (flags & 0x80) !== 0,
-      workingDayValid: (flags & 0x20) !== 0,
+      workingDayValid: (flags & 0x20) === 0, // NWD: 0 = WD field valid, 1 = not valid
       workingDay: (flags & 0x40) !== 0,
       summerTime: (flags & 0x01) !== 0,
-      clockQuality: (quality & 0x80) !== 0 ? 'unsynchronised' : 'synchronised',
+      // CLQ: 1 = clock WITH external sync signal (synchronised), 0 = local/no sync.
+      clockQuality: (quality & 0x80) !== 0 ? 'synchronised' : 'unsynchronised',
     };
   },
   encode(v: DPT19Value): APDUValue {
@@ -105,9 +108,11 @@ const codec: DPTCodec<DPT19Value> = {
     let flags = 0;
     if (v.fault) flags |= 0x80;
     if (v.workingDay) flags |= 0x40;
-    if (v.workingDayValid) flags |= 0x20;
+    // NWD bit is set when the working-day field is NOT valid; default (undefined) = valid.
+    if (v.workingDayValid === false) flags |= 0x20;
     if (v.summerTime) flags |= 0x01;
-    const quality = v.clockQuality === 'unsynchronised' ? 0x80 : 0x00;
+    // CLQ bit is set when the clock has an external sync signal (synchronised).
+    const quality = v.clockQuality === 'synchronised' ? 0x80 : 0x00;
     return {
       kind: 'bytes',
       value: Buffer.from([

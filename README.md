@@ -15,6 +15,7 @@ frame and crypto primitives or just call the high-level client).
 | Capability | Status |
 | --- | --- |
 | KNX/IP **tunnelling over UDP** (heartbeat, send mutex, auto-reconnect) | ✅ |
+| KNX/IP **routing** (multicast `224.0.23.12`) — `ROUTING_INDICATION`/`BUSY`/`LOST` | ✅ |
 | **KNX IP Secure** tunnelling over TCP (X25519 handshake + AES-128-CCM wrapper) | ✅ |
 | **Gateway discovery** via `SEARCH_REQUEST` | ✅ |
 | **DPT codecs** (1–14, 16–20, 26, 28, 29, 232, 235, 251) | ✅ |
@@ -69,10 +70,34 @@ Pick your case, then pass the minimum config to `new TunnelClient(options)`:
 | Use case | Minimum config |
 | --- | --- |
 | **Plain UDP tunnel** | `gatewayIp`, `gatewayPort` (default 3671) |
+| **Plain routing** (multicast) | `RoutingClient({ physAddr })` — joins `224.0.23.12:3671` |
 | **KNX/IP Secure tunnel** (TCP) | `gatewayIp`, `gatewayPort`, `secure: { userId, userPassword, deviceAuthPassword? }` |
 | **Discover gateways** on the LAN | `discoverGateways({ timeoutMs })` (static, no client) |
 
-If you're unsure, start with the **plain UDP tunnel**.
+If you're unsure, start with the **plain UDP tunnel**. Use **routing** when you talk
+to a KNX/IP router (multicast backbone) instead of a single tunnel interface.
+
+### Routing (multicast backbone)
+
+```ts
+import { RoutingClient, smallValue } from 'knx-ip-ts';
+
+const router = new RoutingClient({
+  physAddr: '1.1.200',            // your source IA on the backbone (required)
+  localIp: '192.168.1.10',        // optional: NIC to join on (multi-NIC hosts)
+});
+
+router.on('cemi', (frame) => console.log('rx', frame.data?.dstAddr.toString()));
+router.on('error', (err) => console.error(err));
+
+await router.connect();
+await router.groupValueWrite('1/2/3', smallValue(1)); // boolean ON
+await router.disconnect();
+```
+
+`RoutingClient` injects group telegrams as `L_DATA_IND` (the backbone convention),
+drops its own looped-back frames by source IA, and honours `ROUTING_BUSY` by
+pausing sends for the advertised window.
 
 ### KNX/IP Secure tunnel
 
@@ -158,6 +183,21 @@ exported for advanced use (see *Low-level building blocks*).
 | `'state'` | `(next, prev)` | Tunnel state changes. |
 | `'error'` | `Error` | Unrecoverable communication error. |
 | `'warning'` | `reason` | Recoverable issue (e.g. a dropped heartbeat). |
+
+### `RoutingClient` (multicast)
+
+Same methods/events as `TunnelClient` (`connect`, `disconnect`,
+`groupValueWrite`, `groupValueRead`, `'cemi'`, `'state'`, `'error'`,
+`'warning'`) but connectionless. Extra options:
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `physAddr` | — *(required)* | Source IA on the backbone. |
+| `localIp` | `0.0.0.0` | NIC to join the multicast group on. |
+| `multicastGroup` / `multicastPort` | `224.0.23.12` / `3671` | Backbone endpoint. |
+| `ttl` | `16` | Multicast TTL. |
+| `filterOwnEcho` | `true` | Drop frames we sent (matched by source IA). |
+| `respectRoutingBusy` | `true` | Pause sends for the window an inbound `ROUTING_BUSY` advertises. |
 
 ## Encode / decode DPT values
 

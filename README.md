@@ -1,9 +1,9 @@
-# knx-ip-ts
+# knx-ts
 
-[![npm version](https://img.shields.io/npm/v/knx-ip-ts.svg)](https://www.npmjs.com/package/knx-ip-ts)
-[![license](https://img.shields.io/npm/l/knx-ip-ts.svg)](./LICENSE)
-[![types](https://img.shields.io/npm/types/knx-ip-ts.svg)](https://www.npmjs.com/package/knx-ip-ts)
-[![node](https://img.shields.io/node/v/knx-ip-ts.svg)](https://www.npmjs.com/package/knx-ip-ts)
+[![npm version](https://img.shields.io/npm/v/knx-ts.svg)](https://www.npmjs.com/package/knx-ts)
+[![license](https://img.shields.io/npm/l/knx-ts.svg)](./LICENSE)
+[![types](https://img.shields.io/npm/types/knx-ts.svg)](https://www.npmjs.com/package/knx-ts)
+[![node](https://img.shields.io/node/v/knx-ts.svg)](https://www.npmjs.com/package/knx-ts)
 
 A pure-TypeScript KNX/IP client library for Node.js. KNXnet/IP tunnelling,
 KNX IP Secure, gateway discovery, DPT codecs, and ETS `.knxproj` parsing —
@@ -29,7 +29,7 @@ half-implemented surfaces.
 ## Install
 
 ```bash
-npm install knx-ip-ts
+npm install knx-ts
 ```
 
 Requires Node.js ≥ 18.
@@ -40,7 +40,7 @@ The common path: open a tunnel, react to incoming cEMI frames, send a
 GroupValueWrite.
 
 ```ts
-import { TunnelClient, smallValue } from 'knx-ip-ts';
+import { TunnelClient, smallValue } from 'knx-ts';
 
 const client = new TunnelClient({
   gatewayIp: '192.168.1.50',
@@ -79,7 +79,7 @@ to a KNX/IP router (multicast backbone) instead of a single tunnel interface.
 ### Routing (multicast backbone)
 
 ```ts
-import { RoutingClient, smallValue } from 'knx-ip-ts';
+import { RoutingClient, smallValue } from 'knx-ts';
 
 const router = new RoutingClient({
   physAddr: '1.1.200',            // your source IA on the backbone (required)
@@ -101,7 +101,7 @@ pausing sends for the advertised window.
 ### KNX/IP Secure tunnel
 
 ```ts
-import { TunnelClient } from 'knx-ip-ts';
+import { TunnelClient } from 'knx-ts';
 
 const client = new TunnelClient({
   gatewayIp: '192.168.1.50',
@@ -125,7 +125,7 @@ expose one (the `SESSION_RESPONSE` MAC is then not verified; see Security).
 ### Discover gateways
 
 ```ts
-import { discoverGateways } from 'knx-ip-ts';
+import { discoverGateways } from 'knx-ts';
 
 const gateways = await discoverGateways({ timeoutMs: 3000 });
 for (const g of gateways) {
@@ -201,7 +201,7 @@ Same methods/events as `TunnelClient` (`connect`, `disconnect`,
 ## Encode / decode DPT values
 
 ```ts
-import { getDpt, hasDpt } from 'knx-ip-ts';
+import { getDpt, hasDpt } from 'knx-ts';
 
 if (hasDpt('9.001')) {
   const codec = getDpt('9.001');   // 2-byte float (temperature)
@@ -218,7 +218,7 @@ decode incoming cEMI payloads. Supported DPT families: **1, 2, 3, 4, 5, 6, 7,
 
 ```ts
 import { readFileSync } from 'node:fs';
-import { ETSProjectMap } from 'knx-ip-ts';
+import { ETSProjectMap } from 'knx-ts';
 
 const map = new ETSProjectMap();
 const result = map.loadKnxproj(readFileSync('./MyProject.knxproj'), {
@@ -261,7 +261,7 @@ cEMI frames are decrypted **transparently** — the `'cemi'` event delivers the
 real service APCI (GroupValueWrite/Read/…) just like a plain bus:
 
 ```ts
-import { TunnelClient, InMemoryDataSecureKeys } from 'knx-ip-ts';
+import { TunnelClient, InMemoryDataSecureKeys } from 'knx-ts';
 
 const keys = new InMemoryDataSecureKeys()
   .setGroupKey(0x0901, Buffer.from('000102…0f', 'hex')); // GA 1/2/1 → 16-byte key
@@ -301,7 +301,7 @@ See `src/index.ts` for the full export surface.
 
 ## How it differs
 
-`knx-ip-ts` is a **library-first** KNX/IP engine: strict TypeScript, no native
+`knx-ts` is a **library-first** KNX/IP engine: strict TypeScript, no native
 dependencies, tree-shakable, and it exports the frame/APCI/crypto primitives so
 you can build higher-level integrations on top — a backend service, an edge
 gateway, a CLI tool, or a higher-level wrapper. It pairs a focused KNX/IP

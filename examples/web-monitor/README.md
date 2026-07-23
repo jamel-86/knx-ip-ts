@@ -1,4 +1,4 @@
-# web-monitor — example React + Node app using `knx-ip-ts`
+# web-monitor — example React + Node app using `knx-ts`
 
 A small reference app that demonstrates the library end-to-end:
 

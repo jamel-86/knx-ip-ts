@@ -1,5 +1,5 @@
 {
-  "name": "knx-ip-ts-web-monitor-backend",
+  "name": "knx-ts-web-monitor-backend",
   "version": "0.0.0",
   "private": true,
   "scripts": {

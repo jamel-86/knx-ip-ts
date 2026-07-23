@@ -1,7 +1,7 @@
 // SECURE_WRAPPER frame encryption / decryption per KNX/IP Secure §4.5.
 //
 // Author: Jamel Nacef <jamelnacef@icloud.com>
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
 //
 // Each session frame is a SecureWrapper body whose plaintext is a complete
 // inner KNX/IP frame (header + body). The wrapper carries:

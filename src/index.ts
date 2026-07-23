@@ -1,9 +1,9 @@
-// Public API for @jamel-knx/knx-ip-ts.
+// Public API for knx-ip-ts.
 //
 // A pure-TypeScript KNX/IP client library: UDP tunnelling, KNX IP Secure
 // tunnelling over TCP, gateway discovery, DPT codecs, and ETS .knxproj parsing.
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
 
 // ---------------------------------------------------------------------------
 // Tunnel client (the headline API)

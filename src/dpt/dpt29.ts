@@ -1,7 +1,7 @@
 // DPT 29.* — 8-byte signed integer (-2^63..2^63-1).
 //
 // Author: Jamel Nacef <jamelnacef@icloud.com>
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
 //
 // Used for high-precision energy measurements (active / apparent / reactive
 // energy in Wh) on heavy-traffic meters where the 32-bit DPT 13 family

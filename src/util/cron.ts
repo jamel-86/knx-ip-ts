@@ -1,7 +1,7 @@
 // Tiny zero-dependency cron expression matcher.
 //
 // Author: Jamel Nacef <jamelnacef@icloud.com>
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
 //
 // Supports a 5-field expression: minute hour day-of-month month day-of-week.
 // Each field accepts:

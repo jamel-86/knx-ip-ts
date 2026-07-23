@@ -2,7 +2,7 @@
 // inner archive ETS6 places inside .knxproj exports.
 //
 // Author: Jamel Nacef <jamelnacef@icloud.com>
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
 //
 // The .knxproj outer ZIP is unencrypted but it only contains catalog data
 // plus a nested archive (typically `P-XXXX.zip`) which holds the real project

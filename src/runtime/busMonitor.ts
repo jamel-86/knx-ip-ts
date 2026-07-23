@@ -1,7 +1,7 @@
 // In-memory ring buffer + emitter for KNX/IP bus telegrams.
 //
 // Author: Jamel Nacef <jamelnacef@icloud.com>
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
 //
 // One bounded ring buffer per instance. Callers push a record each time a
 // telegram arrives; consumers read the history and/or subscribe for live

@@ -1,7 +1,7 @@
 // Tiny brace-placeholder template engine used by the mqtt-publish node.
 //
 // Author: Jamel Nacef <jamelnacef@icloud.com>
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
 //
 // Two surfaces:
 //   - `interpolateString(template, ctx)` — replaces every `{key}` with the

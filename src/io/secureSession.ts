@@ -1,7 +1,7 @@
 // KNX/IP Secure session driver.
 //
 // Author: Jamel Nacef <jamelnacef@icloud.com>
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
 //
 // Sits between an inner transport (UDP for routing, TCP for tunneling) and
 // the higher-level tunnel/routing logic. Outgoing frames are wrapped in a

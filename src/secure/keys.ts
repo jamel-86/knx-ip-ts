@@ -1,7 +1,7 @@
 // KNX/IP Secure key-derivation helpers.
 //
 // Author: Jamel Nacef <jamelnacef@icloud.com>
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
 //
 // The KDFs are documented in the KNX/IP Secure specification (KNX 03_08_05);
 // each is a PBKDF2-HMAC-SHA256 with a fixed salt and 65 536 iterations, the

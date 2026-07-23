@@ -1,7 +1,7 @@
 // KNX/IP Secure handshake MAC helpers.
 //
 // Author: Jamel Nacef <jamelnacef@icloud.com>
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
 //
 // The handshake MAC is computed as a KNX-flavoured CBC-MAC and then encrypted
 // with AES-CTR using a fixed 16-byte counter (`COUNTER_0_HANDSHAKE`). The

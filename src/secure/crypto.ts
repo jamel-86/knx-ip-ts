@@ -1,7 +1,7 @@
 // Crypto primitives for KNX/IP Secure.
 //
 // Author: Jamel Nacef <jamelnacef@icloud.com>
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
 //
 // All algorithms are implemented strictly from public specifications:
 //   - AES-128-CMAC: NIST SP 800-38B

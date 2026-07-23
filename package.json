@@ -1,9 +1,9 @@
 {
-  "name": "@jamel-knx/knx-ip-ts",
+  "name": "knx-ip-ts",
   "version": "0.1.0",
-  "description": "Pure-TypeScript KNX/IP client library — UDP tunnelling, KNX IP Secure over TCP, gateway discovery, DPT codecs, and ETS .knxproj parsing. No Node-RED required.",
+  "description": "Pure-TypeScript KNX/IP client library — UDP tunnelling, KNX IP Secure over TCP, gateway discovery, DPT codecs, and ETS .knxproj parsing.",
   "author": "Jamel Nacef <jamelnacef@icloud.com>",
-  "license": "Apache-2.0",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jamel-86/knx-ip-ts.git"
@@ -24,8 +24,7 @@
     "dist/",
     "README.md",
     "CHANGELOG.md",
-    "LICENSE",
-    "NOTICE"
+    "LICENSE"
   ],
   "scripts": {
     "build": "tsc",

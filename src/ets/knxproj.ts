@@ -1,7 +1,7 @@
 // Parser for ETS6 .knxproj project archives.
 //
 // Author: Jamel Nacef <jamelnacef@icloud.com>
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
 //
 // A .knxproj is a ZIP archive containing one or more XML files. The project
 // XML (typically `P-XXXX/0.xml` where XXXX is a project id) holds the group-

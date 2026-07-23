@@ -1,7 +1,7 @@
 // DPT 26.* — 1-byte scene-info combined value.
 //
 // Author: Jamel Nacef <jamelnacef@icloud.com>
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
 //
 // Wire layout:
 //   bit 7    reserved (0)

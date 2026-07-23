@@ -2,7 +2,7 @@
 // frame in a Secure Tunneling / Secure Routing session.
 //
 // Author: Jamel Nacef <jamelnacef@icloud.com>
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
 //
 // Wire layout (all big-endian):
 //   [0..1]   Secure Session Identifier (uint16)

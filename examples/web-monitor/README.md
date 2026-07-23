@@ -1,4 +1,4 @@
-# web-monitor — example React + Node app using `@jamel-knx/knx-ts`
+# web-monitor — example React + Node app using `knx-ts-driver`
 
 A small reference app that demonstrates the library end-to-end:
 

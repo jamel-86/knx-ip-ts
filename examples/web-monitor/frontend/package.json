@@ -1,5 +1,5 @@
 {
-  "name": "@jamel-knx/knx-ts-web-monitor-frontend",
+  "name": "knx-ts-driver-web-monitor-frontend",
   "version": "0.0.0",
   "private": true,
   "type": "module",

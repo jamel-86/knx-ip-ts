@@ -101,7 +101,7 @@ export function App() {
         <div className="brand">
           <div className="brand-logo">K</div>
           <span>KNX/IP web monitor</span>
-          <span className="brand-sub">@jamel-knx/knx-ts</span>
+          <span className="brand-sub">knx-ts-driver</span>
         </div>
         <div className="topbar-meta">
           {data.ets?.projectName && (

@@ -252,6 +252,25 @@ export {
 } from './secure/handshake';
 
 // ---------------------------------------------------------------------------
+// KNX Data Secure (group / p2p telegram decryption)
+// ---------------------------------------------------------------------------
+export {
+  decodeDataSecure,
+  encodeDataSecure,
+  isDataSecureApdu,
+  APCI_DATA_SECURE,
+  SERVICE_DATA,
+  SERVICE_SYNC_REQ,
+  SERVICE_SYNC_RES,
+  SCF_TOOL_ACCESS,
+  SCF_AUTH_CONF,
+  SCF_SYSTEM_BCAST,
+  type DataSecureDecodeInput,
+  type DataSecureEncodeInput,
+  type DataSecurePdu,
+} from './secure/dataSecure';
+
+// ---------------------------------------------------------------------------
 // In-memory bus monitor (optional helper for observability)
 // ---------------------------------------------------------------------------
 export {

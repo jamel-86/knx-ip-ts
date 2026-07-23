@@ -20,7 +20,6 @@ frame and crypto primitives or just call the high-level client).
 | **Gateway discovery** via `SEARCH_REQUEST` | ✅ |
 | **DPT codecs** (1–14, 16–20, 26, 28, 29, 232, 235, 251) | ✅ |
 | **ETS `.knxproj`** parsing — including password-protected projects | ✅ |
-| KNX/IP **routing** (multicast) | — |
 | **KNX Data Secure** (group/p2p telegram decryption) | ✅ |
 | **TP serial transceiver** (hardware in progress) | — |
 

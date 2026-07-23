@@ -1,4 +1,4 @@
-// Public API for knx-ts.
+// Public API for @jamel-knx/knx-ts.
 //
 // A pure-TypeScript KNX/IP client library: UDP tunnelling, KNX IP Secure
 // tunnelling over TCP, gateway discovery, DPT codecs, and ETS .knxproj parsing.

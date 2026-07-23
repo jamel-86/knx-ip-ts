@@ -11,9 +11,11 @@ import { decodeApci } from '../core/apci';
 import { CEMIFlags, type CEMIFrame } from '../core/cemi';
 import {
   APCI_DATA_SECURE,
+  type DataSecurePdu,
   decodeDataSecure,
   SCF_SYSTEM_BCAST,
   SCF_TOOL_ACCESS,
+  SERVICE_DATA,
 } from './dataSecure';
 
 export interface DataSecureKeyContext {
@@ -69,6 +71,11 @@ export class InMemoryDataSecureKeys implements DataSecureKeyResolver {
  * numbers from each source (correct for ordered transports — TCP tunnel, and
  * the common multicast case). A sliding window would be needed to tolerate
  * UDP reordering; that's a future refinement.
+ *
+ * State is in-memory and per-instance — it resets on restart, which reopens a
+ * short replay window for previously-seen sequences. KNX devices persist the
+ * last-seen seq in the security interface object; for a client library this is
+ * acceptable.
  */
 export class DataSecureAntiReplay {
   private readonly _last = new Map<number, number>();
@@ -133,21 +140,31 @@ export function handleSecuredCemi(
     };
   }
 
-  let plain: Buffer;
-  let seq: number;
+  let pdu: DataSecurePdu;
   try {
-    const pdu = decodeDataSecure({ lsdu, key, ...ctx });
-    plain = pdu.plain;
-    seq = pdu.sequence;
+    pdu = decodeDataSecure({ lsdu, key, ...ctx });
   } catch (err) {
     return { kind: 'dropped', reason: `decode/MAC failed: ${(err as Error).message}` };
   }
 
-  if (antiReplay && !antiReplay.checkAndUpdate(ctx.src, seq)) {
-    return { kind: 'dropped', reason: `replay (src=0x${ctx.src.toString(16)} seq=${seq})` };
+  // Only DATA telegrams carry a service APCI to re-parse. SYNC_REQ/SYNC_RES
+  // (key distribution) are p2p management — drop them on the group path.
+  if (pdu.service !== SERVICE_DATA) {
+    return { kind: 'dropped', reason: `non-data Data Secure service ${pdu.service}` };
   }
 
-  // Re-parse the decrypted bytes as the real service APCI (GroupValueWrite, etc.).
-  data.payload = decodeApci(plain);
+  // Anti-replay runs AFTER MAC verification — a forged frame can't advance the
+  // window even if its declared sequence is higher than anything we've seen.
+  if (antiReplay && !antiReplay.checkAndUpdate(ctx.src, pdu.sequence)) {
+    return { kind: 'dropped', reason: `replay (src=0x${ctx.src.toString(16)} seq=${pdu.sequence})` };
+  }
+
+  // Re-parse the decrypted bytes as the real service APCI. Can throw on a
+  // malformed inner payload — catch so handleSecuredCemi never throws.
+  try {
+    data.payload = decodeApci(pdu.plain);
+  } catch (err) {
+    return { kind: 'dropped', reason: `decrypted payload is not a valid APCI: ${(err as Error).message}` };
+  }
   return { kind: 'decrypted' };
 }

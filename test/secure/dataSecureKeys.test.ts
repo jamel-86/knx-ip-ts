@@ -156,4 +156,49 @@ describe('handleSecuredCemi — transparent decrypt hook', () => {
     assert.equal(r.kind, 'passthrough');
     assert.equal(cemi.data!.payload!.kind, 'Unknown'); // unchanged
   });
+
+  // Crown jewel: a forged frame with a high sequence must NOT advance the
+  // replay window. MAC verification runs BEFORE checkAndUpdate, so a forged
+  // frame (wrong key → MAC fail → dropped) can't poison the window even if
+  // its declared seq is higher than anything we've seen.
+  it('does NOT advance the replay window on a forged frame (MAC fail before replay check)', () => {
+    const keys = new InMemoryDataSecureKeys().setGroupKey(GA, KEY);
+    const replay = new DataSecureAntiReplay();
+
+    // 1) Accept seq 5.
+    assert.equal(handleSecuredCemi(securedCemi(5), keys, replay).kind, 'decrypted');
+
+    // 2) Forge seq 100 with the WRONG key → MAC fails → dropped.
+    const forged = securedCemi(100, Buffer.alloc(16, 0xff));
+    const r2 = handleSecuredCemi(forged, keys, replay);
+    assert.equal(r2.kind, 'dropped');
+    assert.match(r2.kind === 'dropped' ? r2.reason : '', /MAC/);
+
+    // 3) A valid seq 6 (still > 5, but < 100) must STILL be accepted — proves
+    //    the forged high-seq didn't advance the window past 6.
+    assert.equal(handleSecuredCemi(securedCemi(6), keys, replay).kind, 'decrypted');
+  });
+
+  // Bug 1 fix: decodeApci on a malformed inner payload must not throw.
+  it('drops without throwing when the decrypted payload is too short for an APCI', () => {
+    const badPlain = Buffer.from([0x42]); // 1 byte — decodeApci requires >= 2
+    const secured = encodeDataSecure({
+      tpci: 0, src: SRC, dst: GA, dstIsGroup: true, key: KEY,
+      plain: badPlain, sequence: 1,
+    });
+    const cemi = new CEMIFrame({
+      code: CEMIMessageCode.L_DATA_IND,
+      data: new CEMILData({
+        flags: DEFAULT_OUTGOING_FLAGS | CEMIFlags.DESTINATION_GROUP_ADDRESS,
+        srcAddr: new IndividualAddress(SRC),
+        dstAddr: new GroupAddress(GA),
+        tpci: tDataGroup(),
+        payload: { kind: 'Unknown', service: APCI_DATA_SECURE, raw: secured },
+      }),
+    });
+    const keys = new InMemoryDataSecureKeys().setGroupKey(GA, KEY);
+    const r = handleSecuredCemi(cemi, keys, new DataSecureAntiReplay());
+    assert.equal(r.kind, 'dropped');
+    assert.match(r.kind === 'dropped' ? r.reason : '', /APDU/);
+  });
 });

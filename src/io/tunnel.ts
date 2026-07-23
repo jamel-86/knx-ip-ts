@@ -35,6 +35,7 @@ import { HPAI } from '../core/hpai';
 import { KNXIPFrame } from '../core/knxipFrame';
 import { ConnectionType, ErrorCode, HostProtocol, errorCodeName } from '../core/serviceTypes';
 import { defaultTpci } from '../core/telegram';
+import { DataSecureAntiReplay, type DataSecureKeyResolver, handleSecuredCemi } from '../secure/dataSecureKeys';
 import {
   AUTO_RECONNECT_WAIT_MS,
   CONNECTIONSTATE_REQUEST_TIMEOUT_MS,
@@ -135,6 +136,10 @@ export interface TunnelClientOptions {
   secure?: SecureTunnelOptions;
   /** Logger sink. Defaults to no-op. */
   logger?: TunnelLogger;
+  /** Data Secure key resolver — when set, secured group/p2p cEMIs are decrypted transparently. */
+  dataSecureKeys?: DataSecureKeyResolver;
+  /** Data Secure anti-replay tracker. Default: a fresh per-instance tracker when `dataSecureKeys` is set. */
+  dataSecureAntiReplay?: DataSecureAntiReplay;
 }
 
 export interface TunnelLogger {
@@ -245,6 +250,8 @@ export class TunnelClient extends EventEmitter {
 
   /** Tunnel-builder transport factory (overridable for tests). */
   private readonly _transportFactory: (opts: TunnelClientOptions) => Transport;
+  private readonly _secureKeys: DataSecureKeyResolver | null;
+  private readonly _secureReplay: DataSecureAntiReplay | null;
 
   constructor(
     opts: TunnelClientOptions,
@@ -260,6 +267,10 @@ export class TunnelClient extends EventEmitter {
     };
     this._logger = { ...noopLogger, ...opts.logger };
     this._transportFactory = transportFactory;
+    this._secureKeys = opts.dataSecureKeys ?? null;
+    this._secureReplay = opts.dataSecureKeys
+      ? (opts.dataSecureAntiReplay ?? new DataSecureAntiReplay())
+      : null;
   }
 
   get state(): TunnelState {
@@ -730,6 +741,13 @@ export class TunnelClient extends EventEmitter {
       this._stats.rxTelegrams += 1;
       this._stats.lastRxTs = now;
       this._stats.lastFrameTs = now;
+      if (this._secureKeys) {
+        const r = handleSecuredCemi(frame, this._secureKeys, this._secureReplay);
+        if (r.kind === 'dropped') {
+          this._logger.warn(`Data Secure: ${r.reason}`);
+          return;
+        }
+      }
       this.emit('cemi', frame);
     } catch (err) {
       this._logger.warn(`Could not parse inbound CEMI: ${(err as Error).message}`);

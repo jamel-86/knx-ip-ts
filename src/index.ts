@@ -269,6 +269,13 @@ export {
   type DataSecureEncodeInput,
   type DataSecurePdu,
 } from './secure/dataSecure';
+export {
+  DataSecureAntiReplay,
+  InMemoryDataSecureKeys,
+  handleSecuredCemi,
+  type DataSecureKeyContext,
+  type DataSecureKeyResolver,
+} from './secure/dataSecureKeys';
 
 // ---------------------------------------------------------------------------
 // In-memory bus monitor (optional helper for observability)

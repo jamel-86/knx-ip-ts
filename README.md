@@ -21,7 +21,7 @@ frame and crypto primitives or just call the high-level client).
 | **DPT codecs** (1–14, 16–20, 26, 28, 29, 232, 235, 251) | ✅ |
 | **ETS `.knxproj`** parsing — including password-protected projects | ✅ |
 | KNX/IP **routing** (multicast) | — |
-| **KNX Data Secure** (group-level encryption) | — |
+| **KNX Data Secure** (group/p2p telegram decryption) | ✅ |
 | **TP / FT1.2** serial transceiver | — |
 
 Focused on purpose: a correct, auditable KNX/IP client + project parser. No
@@ -253,6 +253,37 @@ KNX/IP Secure is hardened beyond "it encrypts":
 If `deviceAuthPassword` is omitted, the `SESSION_RESPONSE` MAC is **not**
 verified — the session is still encrypted and the client is still authenticated,
 but there's no anti-MITM guarantee on the gateway identity.
+
+## Data Secure (group-telegram decryption)
+
+When a KNX installation uses Data Secure, group telegrams are encrypted
+end-to-end. Pass a key resolver to `TunnelClient` or `RoutingClient` and secured
+cEMI frames are decrypted **transparently** — the `'cemi'` event delivers the
+real service APCI (GroupValueWrite/Read/…) just like a plain bus:
+
+```ts
+import { TunnelClient, InMemoryDataSecureKeys } from 'knx-ip-ts';
+
+const keys = new InMemoryDataSecureKeys()
+  .setGroupKey(0x0901, Buffer.from('000102…0f', 'hex')); // GA 1/2/1 → 16-byte key
+
+const client = new TunnelClient({
+  gatewayIp: '192.168.1.50',
+  dataSecureKeys: keys,   // secured frames are now decrypted + replay-checked
+});
+
+client.on('cemi', (frame) => {
+  // frame.data.payload is the DECRYPTED APCI — no Data-Secure wrapper.
+});
+```
+
+- **Keys:** group comms resolve by destination GA; p2p by source IA; tool-access
+  by a dedicated tool key (falls back to p2p); system-broadcast by backbone key.
+- **Anti-replay:** per-source sequence tracking; replayed frames are dropped.
+- **No key / MAC fail:** the frame is dropped and a `'warning'` is emitted (not
+  `'cemi'`) so undecryptable traffic never reaches the application.
+- **Low-level:** `decodeDataSecure` / `encodeDataSecure` are exported for
+  standalone use; `handleSecuredCemi` for custom integration paths.
 
 ## Low-level building blocks
 

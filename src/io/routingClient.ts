@@ -22,6 +22,7 @@ import { type APDUValue, groupValueRead, groupValueWrite } from '../core/apci';
 import { GroupAddress, type GroupAddressInput, IndividualAddress, type IndividualAddressInput } from '../core/address';
 import { defaultTpci } from '../core/telegram';
 import { KNXIPFrame } from '../core/knxipFrame';
+import { DataSecureAntiReplay, type DataSecureKeyResolver, handleSecuredCemi } from '../secure/dataSecureKeys';
 import { KNX_MULTICAST_GROUP, KNX_PORT } from './const';
 import { MulticastTransport } from './multicastTransport';
 import type { Transport } from './transport';
@@ -51,6 +52,10 @@ export interface RoutingClientOptions {
   filterOwnEcho?: boolean;
   /** Pause sends for the window advertised by an inbound ROUTING_BUSY. Default true. */
   respectRoutingBusy?: boolean;
+  /** Data Secure key resolver — when set, secured group/p2p cEMIs are decrypted transparently. */
+  dataSecureKeys?: DataSecureKeyResolver;
+  /** Data Secure anti-replay tracker. Default: a fresh per-instance tracker when `dataSecureKeys` is set. */
+  dataSecureAntiReplay?: DataSecureAntiReplay;
   /** Logger sink. Defaults to no-op. */
   logger?: RoutingLogger;
 }
@@ -64,6 +69,8 @@ export class RoutingClient extends EventEmitter {
   private readonly _filterOwnEcho: boolean;
   private readonly _respectBusy: boolean;
   private readonly _logger: RoutingLogger;
+  private readonly _secureKeys: DataSecureKeyResolver | null;
+  private readonly _secureReplay: DataSecureAntiReplay | null;
 
   private _transport: Transport | null = null;
   private readonly _transportFactory: () => Transport;
@@ -81,6 +88,8 @@ export class RoutingClient extends EventEmitter {
     this._filterOwnEcho = opts.filterOwnEcho ?? true;
     this._respectBusy = opts.respectRoutingBusy ?? true;
     this._logger = opts.logger ?? {};
+    this._secureKeys = opts.dataSecureKeys ?? null;
+    this._secureReplay = opts.dataSecureKeys ? (opts.dataSecureAntiReplay ?? new DataSecureAntiReplay()) : null;
     this._transportFactory =
       transportFactory ??
       (() =>
@@ -178,6 +187,13 @@ export class RoutingClient extends EventEmitter {
       }
       const src = cemiFrame.data?.srcAddr;
       if (this._filterOwnEcho && src && src.equals(this._physAddr)) return; // own loopback
+      if (this._secureKeys) {
+        const r = handleSecuredCemi(cemiFrame, this._secureKeys, this._secureReplay);
+        if (r.kind === 'dropped') {
+          this.emit('warning', `Data Secure: ${r.reason}`);
+          return;
+        }
+      }
       this.emit('cemi', cemiFrame);
       return;
     }
